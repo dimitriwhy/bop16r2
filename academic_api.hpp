@@ -32,12 +32,18 @@ namespace Academic
     class Journal{
     public:
         //string JN ;      // Journal name	                String
-        long long JId ;       // Journal ID                  	Int64	
+        long long JId ;       // Journal ID                  	Int64
+        bool operator==(const Journal &rhs){
+            return rhs.JId == JId && JId != -1;
+        }
     };
     class Conference{
     public:
         //string CN ;      // Conference series name	    String
         long long CId ;       // Conference series ID	Int64	Equals
+        bool operator==(const Conference &rhs){
+            return rhs.CId == CId && CId != -1;
+        }
     };
     class Author{
     public:
@@ -167,7 +173,7 @@ vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
     char *json = new char[10000000];
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=100&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
+    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=1000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
     int fst = 1;
