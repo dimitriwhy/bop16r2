@@ -4,5 +4,5 @@
 
 2. AA可能只有AuId而没有AfId，总之任何值都有可能是-1（也就是空）；
 
-3. 返回边的时候只需要vector<vector<LL> > 就行，里面的vector存路径，1～3-hop路径都用外层的vecor存。
+3. 返回边的时候只需要vector\<vector\<LL\> \> 就行，里面的vector存路径，1～3-hop路径都用外层的vecor存。
 
