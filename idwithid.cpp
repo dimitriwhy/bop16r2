@@ -1,69 +1,142 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <algorithm>
-#include <vector>
+#include <bits/stdc++.h>
+#include "academic_api.hpp"
 using namespace std;
-namespace Academic
-{
-     class Field{
-         string FN ;      // Field of study name	        String
-         long long FId ;       // Field of study ID	        Int64
-	 };
-     class Journal{
-         string JN ;      // Journal name	                String
-         long long JId ;       // Journal ID                  	Int64	
-	 };
-     class Conference{
-         string CN ;      // Conference series name	    String
-         long long CId ;       // Conference series ID	Int64	Equals
-	 };
-     class Author{
-         string AuN ;     // Author name                  String
-         long long AuId ;      // Author ID                    Int64
-         string AfN ;     // Author affiliation name  	String
-         long long AfId ;      // Author affiliation ID	    Int64
-	 };
-     class Paper{
-         long long Id ;        // Entity ID
-         vector<Author> AA ;    // List of Authors
-         Journal J ;      // Journal
-         Conference C ;   // Conference
-         string Ti ;      // Paper title	                String
-         int Y ;          // Paper year	                Int32
-         int D ;     // Paper date	                Date
-         int CC ;         // Citation count               Int32
-         vector<long long> RId ;     // Reference ID                 Int64
-         vector<string> W ;     // Words from paper title/abs   String
-                                // tract for full text search   
-	 };
-     class Info{
-         string expr ; // Query Expression
-         double logprob ; // Log probability?
-         vector<Paper> entities ; // List of Entities  
-	 };
+int pp_cmp(const Paper & a,const Paper & b){
+	return a.Id < b.Id;
 }
-using namespace Academic;
-vector<Paper> getEntities(string expr, vector<string> items);
-Paper getEntity(long long ID, vector<string> items);
-void idWithid(long long id1,long long id2){
-	vector <vector <int> > ans;
-	vector<string> fuck;
-	Paper p1 = getEntity(id1,fuck),p2 = getEntity(id2,fuck);
-	//hop-1
-	for (unsigned int i = 0;i < p1.RId.size();i++)
-		if (p1.RId[i] == id2){
-			vector <int> tt;
+vector <vector <long long> > doubleID(long long id1,long long  id2){
+	vector <vector <long long> > ans;
+	vector <Paper> p1 = getEntities(string("Id=") + to_string(id1),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	vector <Paper> p2 = getEntities(string("Id=") + to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	//1-HOP
+	if (p1.size() != 1 || p2.size() != 1) return ans;
+	for (int i = 0;i < p1[0].RId.size();i++)
+		if (p1[0].RId[i] == id2){
+			vector <long long> tt;
 			tt.push_back(id1);tt.push_back(id2);
 			ans.push_back(tt);
 		}
-	//hop-2
 	
+	//2-HOP
+	//p-p-p
+	string query = string("OR(");
+	for (int i = 0;i < p1[0].RId.size();i++){
+		query += string("Id=") + to_string(p1[0].RId[i]);
+		if (i != p1[0].RId.size() - 1) query += string(",");
+		else query += string(")");
+	}
+	vector <Paper> pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	for (int i = 0;i < pp1.size();i++)
+		for (int j = 0;j < pp1[i].RId.size();j++)
+			if (pp1[i].RId[j] == id2){
+				vector <long long> tt;
+				tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(id2);
+				ans.push_back(tt);
+			}
+	//p-CJ-p
+	if (p1[0].J.JId == p2[0].J.JId){//IF not????
+		vector <long long> tt;
+		tt.push_back(id1),tt.push_back(p1[0].J.JId),tt.push_back(id2);
+		ans.push_back(tt);
+	}
+	if (p1[0].C.CId == p2[0].C.CId){//IF not????
+		vector <long long > tt;
+		tt.push_back(id1),tt.push_back(p1[0].C.CId),tt.push_back(id2);
+		ans.push_back(tt);
+	}
+	//p-A-p
+	for (int i = 0;i < p1[0].AA.size();i++)
+		for (int j = 0;j < p2[0].AA.size();j++)
+			if (p1[0].AA[i].AuId == p2[0].AA[j].AuId){
+				vector <long long> tt;
+				tt.push_back(id1),tt.push_back(p1[0].AA[i].AuId);tt.push_back(id2);
+				ans.push_back(tt);
+			}
+	//p-F-p
+	for (int i = 0;i < p1[0].F.size();i++)
+		for (int j = 0;j < p2[0].F.size();j++)
+			if (p1[0].F[i].FId == p2[0].F[j].FId){
+				vector <long long> tt;
+				tt.push_back(id1),tt.push_back(p1[0].F[i].FId);tt.push_back(id2);
+				ans.push_back(tt);				
+			}
+
+	//3-HOP
+	//p-p-p-p
+	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	sort(pp2.begin(),pp2.end(),pp_cmp);
+	for (int i = 0;i < pp1.size();i++)
+		for (int j = 0;j < pp1[i].RId.size();j++){
+			int ll = 0,rr = pp2.size() - 1,mid;long long p = pp1[i].RId[j],res = -1;
+			while (ll <= rr){
+				mid = (ll+rr) >> 1;
+				if (pp2[mid].Id < p)	ll = mid + 1;
+				else if (pp2[mid].Id > p) rr = mid - 1;
+				else {res = pp2[mid].Id;break;}
+			}
+			if (res != -1){
+				vector <long long> tt;
+				tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(res),tt.push_back(id2);
+				ans.push_back(tt);
+			}
+		}
+	//p-p-CJAF-p
+	for (int i = 0;i < pp1.size();i++){
+		if (pp1[i].C.CId == p2[0].C.CId){//IF not ?????
+			vector <long long> tt;
+			tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].C.CId),tt.push_back(id2);
+			ans.push_back(tt);
+		}
+		if (pp1[i].J.JId == p2[0].J.JId){//IF not ?????
+			vector <long long> tt;
+			tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].J.JId),tt.push_back(id2);
+			ans.push_back(tt);
+		}
+		for (int j = 0;j < pp1[i].AA.size();j++)
+			for (int k = 0;k < p2[0].AA.size();j++)
+				if (pp1[i].AA[j].AuId == p2[0].AA[k].AuId){
+					vector <long long> tt;
+					tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].AA[j].AuId),tt.push_back(id2);
+					ans.push_back(tt);
+				}
+		for (int j = 0;j < pp1[i].F.size();j++)
+			for (int k = 0;k < p2[0].F.size();j++)
+				if (pp1[i].F[j].FId == p2[0].F[k].FId){
+					vector <long long> tt;
+					tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].F[j].FId),tt.push_back(id2);
+					ans.push_back(tt);
+				}		
+	}
+	//p-CJAF-p-p
+	for (int i = 0;i < pp2.size();i++){
+		if (p1[0].C.CId == pp2[i].C.CId){//IF not ?????
+			vector <long long> tt;
+			tt.push_back(id1),tt.push_back(p1[0].C.CId),tt.push_back(pp2[i].Id),tt.push_back(id2);
+			ans.push_back(tt);
+		}
+		if (p1[0].J.JId == pp2[i].J.JId){//IF not ?????
+			vector <long long> tt;
+			tt.push_back(id1),tt.push_back(p1[0].J.JId),tt.push_back(pp2[i].Id),tt.push_back(id2);
+			ans.push_back(tt);
+		}
+		for (int j = 0;j < p1[0].AA.size();j++)
+			for (int k = 0;k < pp2[i].AA.size();j++)
+				if (p1[0].AA[j].AuId == pp2[i].AA[k].AuId){
+					vector <long long> tt;
+					tt.push_back(id1),tt.push_back(p1[0].AA[j].AuId),tt.push_back(pp2[i].Id),tt.push_back(id2);
+					ans.push_back(tt);
+				}
+		for (int j = 0;j < p1[0].F.size();j++)
+			for (int k = 0;k < pp2[i].F.size();j++)
+				if (p1[0].F[j].FId == pp2[i].F[k].FId){
+					vector <long long> tt;
+					tt.push_back(id1),tt.push_back(p1[0].F[j].FId),tt.push_back(pp2[i].Id),tt.push_back(id2);
+					ans.push_back(tt);
+				}
+	}
+	return ans;
 }
 int main(){
 	
 	return 0;
-}
-Paper getEntity(long long ID, vector<string> items){
-	
 }
