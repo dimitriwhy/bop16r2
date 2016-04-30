@@ -4,10 +4,10 @@
 #include <vector>
 #include <string>
 #include <curl/curl.h>
-#include "rapidjson-1.0.2/include/rapidjson/rapidjson.h"
-#include "rapidjson-1.0.2/include/rapidjson/document.h"
-#include "rapidjson-1.0.2/include/rapidjson/writer.h"
-#include "rapidjson-1.0.2/include/rapidjson/stringbuffer.h"
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 using namespace std;
 using namespace rapidjson;
@@ -118,10 +118,17 @@ inline Paper get_paper(const Value &p){
         for(int i = 0; i< a.Size(); ++i){
             const Value &t  = a[i];
             Author author;
+
             if(t.HasMember("AuId"))
                 author.AuId = t["AuId"].GetInt64();
+            else
+                author.AuId = -1;
+
             if(t.HasMember("AfId"))
                 author.AfId = t["AfId"].GetInt64();
+            else
+                author.AfId = -1;
+
             paper.AA.push_back(author);
         }
     }
@@ -138,9 +145,13 @@ inline Paper get_paper(const Value &p){
 
     if(p.HasMember("J") && p["J"].HasMember("JId"))
         paper.J.JId = p["J"]["JId"].GetInt64();
+    else
+        paper.C.CId = -1;
 
     if(p.HasMember("C") && p["C"].HasMember("CId"))
         paper.C.CId = p["C"]["CId"].GetInt64();
+    else
+        paper.C.CId = -1;
 
 
     if(p.HasMember("RId")){
@@ -148,7 +159,7 @@ inline Paper get_paper(const Value &p){
         for(int i = 0; i< a.Size(); ++i)
             paper.RId.push_back(a[i].GetInt64());
     }
-     
+    
     return paper;
 }
 
