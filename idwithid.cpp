@@ -34,12 +34,12 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 				ans.push_back(tt);
 			}
 	//p-CJ-p
-	if (p1[0].J.JId == p2[0].J.JId){//IF not????
+	if (p1[0].J.JId != -1 && p1[0].J.JId == p2[0].J.JId){
 		vector <long long> tt;
 		tt.push_back(id1),tt.push_back(p1[0].J.JId),tt.push_back(id2);
 		ans.push_back(tt);
 	}
-	if (p1[0].C.CId == p2[0].C.CId){//IF not????
+	if (p1[0].C.CId != -1 && p1[0].C.CId == p2[0].C.CId){
 		vector <long long > tt;
 		tt.push_back(id1),tt.push_back(p1[0].C.CId),tt.push_back(id2);
 		ans.push_back(tt);
@@ -82,12 +82,12 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 		}
 	//p-p-CJAF-p
 	for (int i = 0;i < pp1.size();i++){
-		if (pp1[i].C.CId == p2[0].C.CId){//IF not ?????
+		if (pp1[i].C.CId != -1 && pp1[i].C.CId == p2[0].C.CId){
 			vector <long long> tt;
 			tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].C.CId),tt.push_back(id2);
 			ans.push_back(tt);
 		}
-		if (pp1[i].J.JId == p2[0].J.JId){//IF not ?????
+		if (pp1[i].J.JId != -1 && pp1[i].J.JId == p2[0].J.JId){
 			vector <long long> tt;
 			tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].J.JId),tt.push_back(id2);
 			ans.push_back(tt);
@@ -109,12 +109,12 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 	}
 	//p-CJAF-p-p
 	for (int i = 0;i < pp2.size();i++){
-		if (p1[0].C.CId == pp2[i].C.CId){//IF not ?????
+		if (p1[0].C.CId != -1 && p1[0].C.CId == pp2[i].C.CId){
 			vector <long long> tt;
 			tt.push_back(id1),tt.push_back(p1[0].C.CId),tt.push_back(pp2[i].Id),tt.push_back(id2);
 			ans.push_back(tt);
 		}
-		if (p1[0].J.JId == pp2[i].J.JId){//IF not ?????
+		if (p1[0].J.JId != -1 && p1[0].J.JId == pp2[i].J.JId){
 			vector <long long> tt;
 			tt.push_back(id1),tt.push_back(p1[0].J.JId),tt.push_back(pp2[i].Id),tt.push_back(id2);
 			ans.push_back(tt);
