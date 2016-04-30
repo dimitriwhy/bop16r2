@@ -12,28 +12,38 @@
 using namespace std;
 using namespace rapidjson;
 
+#define _M          7
+#define _ID         1
+#define _F_FID      2
+#define _J_JID      4
+#define _C_CID      8
+#define _AA_AUID    16
+#define _AA_AFID    32
+#define _RID        64
+const char *_ITEMS[_M] = {"Id", "F.FId", "J.JId", "C.CId", "AA.AuId", "AA.AfId", "RId"};
+
 namespace Academic
 {
     class Field{
     public:
-        string FN ;      // Field of study name	        String
+        //string FN ;      // Field of study name	        String
         long long FId ;       // Field of study ID	        Int64
     };
     class Journal{
     public:
-        string JN ;      // Journal name	                String
+        //string JN ;      // Journal name	                String
         long long JId ;       // Journal ID                  	Int64	
     };
     class Conference{
     public:
-        string CN ;      // Conference series name	    String
+        //string CN ;      // Conference series name	    String
         long long CId ;       // Conference series ID	Int64	Equals
     };
     class Author{
     public:
-        string AuN ;     // Author name                  String
+        //string AuN ;     // Author name                  String
         long long AuId ;      // Author ID                    Int64
-        string AfN ;     // Author affiliation name  	String
+        //string AfN ;     // Author affiliation name  	String
         long long AfId ;      // Author affiliation ID	    Int64
     };
     class Paper{
@@ -42,13 +52,13 @@ namespace Academic
         vector<Author> AA ;    // List of Authors
         Journal J ;      // Journal
         Conference C ;   // Conference
-        Field F;
-        string Ti ;      // Paper title	                String
-        int Y ;          // Paper year	                Int32
-        string D ;     // Paper date	                Date
-        int CC ;         // Citation count               Int32
+        vector<Field> F;
+        //string Ti ;      // Paper title	                String
+        //int Y ;          // Paper year	                Int32
+        //string D ;     // Paper date	                Date
+        //int CC ;         // Citation count               Int32
         vector<long long> RId ;     // Reference ID                 Int64
-        vector<string> W ;     // Words from paper title/abs   String
+        //vector<string> W ;     // Words from paper title/abs   String
         // tract for full text search   
     };
     class Info{
@@ -57,6 +67,7 @@ namespace Academic
         double logprob ; // Log probability?
         vector<Paper> entities ; // List of Entities  
     };
+    
 }
 using namespace Academic;
 
@@ -101,14 +112,6 @@ inline Paper get_paper(const Value &p){
     Paper paper;
     if(p.HasMember("Id"))
         paper.Id = p["Id"].GetInt64();
-    if(p.HasMember("Ti"))
-        paper.Ti = p["Ti"].GetString();
-    if(p.HasMember("Y"))
-        paper.Y = p["Y"].GetInt();
-    if(p.HasMember("D"))
-        paper.D = p["D"].GetString();
-    if(p.HasMember("CC"))
-        paper.CC = p["CC"].GetInt();
 
     if(p.HasMember("AA")){
         const Value &a = p["AA"];
@@ -117,55 +120,63 @@ inline Paper get_paper(const Value &p){
             Author author;
             if(t.HasMember("AuId"))
                 author.AuId = t["AuId"].GetInt64();
-            if(t.HasMember("AuN"))
-                author.AuN = t["AuN"].GetString();
             if(t.HasMember("AfId"))
                 author.AfId = t["AfId"].GetInt64();
-            if(t.HasMember("AfN"))
-                author.AfN = t["AfN"].GetString();
             paper.AA.push_back(author);
         }
     }
     
     if(p.HasMember("F")){
-        paper.F.FId = p["F"]["FId"].GetInt64();
-        paper.F.FN = p["F"]["FN"].GetString();
+        const Value &a = p["F"];
+        for(int i = 0; i < a.Size(); ++i){
+            Field field;
+            field.FId = a[i]["FId"].GetInt64();
+            paper.F.push_back(field);
+        }
     }
 
-    if(p.HasMember("C")){
+
+    if(p.HasMember("J") && p["J"].HasMember("JId"))
+        paper.J.JId = p["J"]["JId"].GetInt64();
+
+    if(p.HasMember("C") && p["C"].HasMember("CId"))
         paper.C.CId = p["C"]["CId"].GetInt64();
-        paper.C.CN = p["C"]["CN"].GetString();
-    }
+
 
     if(p.HasMember("RId")){
         const Value &a = p["RId"];
-        for(Value::ConstValueIterator itr = a.Begin(); itr != a.End(); ++itr)
-            paper.RId.push_back(itr -> GetInt64());
+        for(int i = 0; i< a.Size(); ++i)
+            paper.RId.push_back(a[i].GetInt64());
     }
      
-    return paper;   
+    return paper;
 }
 
-vector<Paper> getEntities(string expr, vector<string> items){
+vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
     char *json = new char[10000000];
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=10000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
+    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=100&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
-    for (int i = 0; i < items.size(); ++i) {
-        if(i)
-            url += ',';
-        url += items[i];
+    int fst = 1;
+    for (int i = 0; i < _M; ++i){
+        if( (items >> i ) & 1 ){
+            if(!fst)
+                url += ',';
+            fst = 0;
+            url += _ITEMS[i];
+        }
     }
+
     getUrl(url.c_str(), json);
 
     //printf("%s %s\n",url.c_str(),json);
-                                           
+    
     
     Document document;
     document.Parse(json);
-    
+
     const Value &a = document["entities"];
     for(SizeType i = 0; i < a.Size(); ++i)
         entities.push_back(get_paper(a[i]));
