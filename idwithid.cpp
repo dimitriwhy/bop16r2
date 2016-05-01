@@ -4,7 +4,7 @@ using namespace std;
 int pp_cmp(const Paper & a,const Paper & b){
 	return a.Id < b.Id;
 }
-vector <vector <long long> > doubleID(long long id1,long long  id2){
+vector <vector <long long> > Id2Id(long long id1,long long  id2){
 	vector <vector <long long> > ans;
 	vector <Paper> p1 = getEntities(string("Id=") + to_string(id1),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 	vector <Paper> p2 = getEntities(string("Id=") + to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
@@ -19,11 +19,13 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 	
 	//2-HOP
 	//p-p-p
-	string query = string("OR(");
+	string query = string("");
 	for (int i = 0;i < p1[0].RId.size();i++){
+		if (i < p1[0].RId.size() - 1) query += string("OR(");
 		query += string("Id=") + to_string(p1[0].RId[i]);
 		if (i != p1[0].RId.size() - 1) query += string(",");
-		else query += string(")");
+		else 
+			for (int j = 0;j < p1[0].RId.size() - 1;j ++) query += string(")");
 	}
 	vector <Paper> pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 	for (int i = 0;i < pp1.size();i++)
@@ -93,14 +95,14 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 			ans.push_back(tt);
 		}
 		for (int j = 0;j < pp1[i].AA.size();j++)
-			for (int k = 0;k < p2[0].AA.size();j++)
+			for (int k = 0;k < p2[0].AA.size();k++)
 				if (pp1[i].AA[j].AuId == p2[0].AA[k].AuId){
 					vector <long long> tt;
 					tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].AA[j].AuId),tt.push_back(id2);
 					ans.push_back(tt);
 				}
 		for (int j = 0;j < pp1[i].F.size();j++)
-			for (int k = 0;k < p2[0].F.size();j++)
+			for (int k = 0;k < p2[0].F.size();k++)
 				if (pp1[i].F[j].FId == p2[0].F[k].FId){
 					vector <long long> tt;
 					tt.push_back(id1),tt.push_back(pp1[i].Id),tt.push_back(pp1[i].F[j].FId),tt.push_back(id2);
@@ -120,14 +122,14 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 			ans.push_back(tt);
 		}
 		for (int j = 0;j < p1[0].AA.size();j++)
-			for (int k = 0;k < pp2[i].AA.size();j++)
+			for (int k = 0;k < pp2[i].AA.size();k++)
 				if (p1[0].AA[j].AuId == pp2[i].AA[k].AuId){
 					vector <long long> tt;
 					tt.push_back(id1),tt.push_back(p1[0].AA[j].AuId),tt.push_back(pp2[i].Id),tt.push_back(id2);
 					ans.push_back(tt);
 				}
 		for (int j = 0;j < p1[0].F.size();j++)
-			for (int k = 0;k < pp2[i].F.size();j++)
+			for (int k = 0;k < pp2[i].F.size();k++)
 				if (p1[0].F[j].FId == pp2[i].F[k].FId){
 					vector <long long> tt;
 					tt.push_back(id1),tt.push_back(p1[0].F[j].FId),tt.push_back(pp2[i].Id),tt.push_back(id2);
@@ -137,6 +139,12 @@ vector <vector <long long> > doubleID(long long id1,long long  id2){
 	return ans;
 }
 int main(){
-	
+	freopen("output.txt","w",stdout);
+	vector <vector <long long> > ans = Id2Id(2140251882,2143554828);
+	for (int i = 0;i < ans.size();i++){
+		for (int j = 0;j < ans[i].size();j++)
+			printf("%lld ",ans[i][j]);
+		printf("\n");
+	}
 	return 0;
 }
