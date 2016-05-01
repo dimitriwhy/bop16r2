@@ -12,7 +12,7 @@ int main(){
 #endif
     char *hStr = new char[100000000],*bStr = new char[100000000];
     LL t1 = clock();
-    vector<Paper> entities = getEntities(string("Id=2140251882"), _AA_AUID) ;
+    vector<Paper> entities = getEntities(string("RId=2128635872"), _RID) ;
     for(auto x : entities){
         //printf("%lld\n", x.Id);
         for(auto y : x.AA){
@@ -20,6 +20,7 @@ int main(){
         }
     }
     LL t2 = clock();
+    printf("%f\n", ti);
     printf("%f\n",double(t2-t1)/CLOCKS_PER_SEC);
     return 0;
 }

@@ -183,7 +183,7 @@ vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
     char *json = new char[100000000];
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=1000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
+    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=10000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
     int fst = 1;

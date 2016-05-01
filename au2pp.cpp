@@ -268,6 +268,7 @@ int main(){
     print(au2pp(2134693834ll,2140251882ll));
     ct1 = times (&tms1);
     
+    printf("%lld\n", (LL)sysconf(_SC_CLK_TCK));
     printf("%f %f\n", (ct1-ct0) / (double)sysconf(_SC_CLK_TCK), ti);
     //printf("%f\n", (t2-t1) / (double)sysconf(_SC_CLK_TCK));
     //printf("%f\n", (t2-t1) / (double)CLOCKS_PER_SEC);
