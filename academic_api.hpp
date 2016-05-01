@@ -65,7 +65,15 @@ namespace Academic
         //int CC ;         // Citation count               Int32
         vector<long long> RId ;     // Reference ID                 Int64
         //vector<string> W ;     // Words from paper title/abs   String
-        // tract for full text search   
+        // tract for full text search
+        Paper(){
+            Id = 0;
+            vector<Author> AA = vector<Author>(0);
+        }
+        ~Paper(){
+            AA.clear();
+            RId.clear();
+        }
     };
     class Info{
     public:
@@ -78,34 +86,29 @@ namespace Academic
 using namespace Academic;
 
 int len;
-size_t save_data(void *ptr, size_t size, size_t nmemb, char* stream)
-{
+size_t save_data(void *ptr, size_t size, size_t nmemb, char* stream){
     size_t written = size * nmemb;
     memcpy(stream + len, ptr, size * nmemb);
     len += strlen(stream + len);
     return written;
 }
-bool getUrl(const char *url, char *bStr)
-{
+bool getUrl(const char *url, char *bStr){
     CURL *curl;
     CURLcode res;
     
     struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, "Accept: T-shirt");
-    curl = curl_easy_init();    // 初始化
+    curl = curl_easy_init(); 
     if (curl)
     {
-        //curl_easy_setopt(curl, CURLOPT_PROXY, "10.99.60.201:8080");// 代理
         len = 0;
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);// 改协议头
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_data);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, bStr);
         
-        //curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, save_data);
-        //curl_easy_setopt(curl, CURLOPT_HEADERDATA, hStr); 
-        res = curl_easy_perform(curl);   // 执行
+        res = curl_easy_perform(curl);   
         if (res != 0) {
             curl_slist_free_all(headers);
             curl_easy_cleanup(curl);
@@ -114,7 +117,7 @@ bool getUrl(const char *url, char *bStr)
     }
 }
 
-inline Paper get_paper(const Value &p){
+Paper get_paper(const Value &p){
     Paper paper;
     if(p.HasMember("Id"))
         paper.Id = p["Id"].GetInt64();
@@ -123,33 +126,22 @@ inline Paper get_paper(const Value &p){
 
     if(p.HasMember("AA")){
         const Value &a = p["AA"];
-        printf("%d\n",a.Size());
-        Author author;
-        for(int i = 0; i< a.Size(); ++i){
-            const Value &t  = a[i];
-
-            if(t.HasMember("AuId"))
-                author.AuId = t["AuId"].GetInt64();
+        for(SizeType i = 0; i< a.Size(); ++i){
+            Author author;
+            
+            if(a[i].HasMember("AuId"))
+                author.AuId = (long long)a[i]["AuId"].GetInt64();
             else
                 author.AuId = -1;
 
-            if(t.HasMember("AfId"))
-                author.AfId = t["AfId"].GetInt64();
+            if(a[i].HasMember("AfId"))
+                author.AfId = (long long)a[i]["AfId"].GetInt64();
             else
                 author.AfId = -1;
-            
-            if(i==3){
-                paper.AA.push_back(author);
-                printf("%lld %lld %d\n",author.AuId, author.AfId, paper.AA.size());
-                break;
-            }
             paper.AA.push_back(author);
-            printf("%d %lld\n",paper.AA.size(), a[i+1]["AuId"].GetInt64());
         }
-        return paper;
     }
     
-    return paper;
     if(p.HasMember("F")){
         const Value &a = p["F"];
         for(int i = 0; i < a.Size(); ++i){
@@ -183,7 +175,7 @@ inline Paper get_paper(const Value &p){
 vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
-    char *json = new char[1000000];
+    char *json = new char[100000000];
     string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=1000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
@@ -199,15 +191,16 @@ vector<Paper> getEntities(string expr, int items){
 
     getUrl(url.c_str(), json);
 
-    printf("%s\n%s\n",url.c_str(),json);
+    //printf("%s\n%s\n",url.c_str(),json);
     
     Document document;
     document.Parse(json);
     
 
     const Value &a = document["entities"];
-    for(SizeType i = 0; i < a.Size(); ++i)
+    for(SizeType i = 0; i < a.Size(); ++i){
         entities.push_back(get_paper(a[i]));
+    }
 
     return entities;
 }
