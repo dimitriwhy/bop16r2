@@ -12,17 +12,16 @@ int main(){
 #endif
     char *hStr = new char[100000000],*bStr = new char[100000000];
     LL t1 = clock();
-    vector<Paper> entities = getEntities(string("RId=2143554828"), _ID | _J_JID | _F_FID | _RID) ;
+    vector<Paper> entities = getEntities(string("RId=2171960770"), _RID) ;
+    int tot = 0;
     for(auto x : entities){
         //printf("%lld\n", x.Id);
         for(auto y : x.AA){
             //printf("%lld %lld\n", y.AuId, y.AfId);
         }
-        for(auto y : x.F)
-            printf("%lld ", y.FId);
-        puts("");
+        tot += x.RId.size();
     }
-    printf("%d\n",entities.size());
+    printf("%d\n",tot);
     LL t2 = clock();
     printf("%f\n",double(t2-t1)/CLOCKS_PER_SEC);
     return 0;

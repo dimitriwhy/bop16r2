@@ -118,12 +118,15 @@ inline Paper get_paper(const Value &p){
     Paper paper;
     if(p.HasMember("Id"))
         paper.Id = p["Id"].GetInt64();
+    else
+        paper.Id = -1;
 
     if(p.HasMember("AA")){
         const Value &a = p["AA"];
+        printf("%d\n",a.Size());
+        Author author;
         for(int i = 0; i< a.Size(); ++i){
             const Value &t  = a[i];
-            Author author;
 
             if(t.HasMember("AuId"))
                 author.AuId = t["AuId"].GetInt64();
@@ -134,11 +137,19 @@ inline Paper get_paper(const Value &p){
                 author.AfId = t["AfId"].GetInt64();
             else
                 author.AfId = -1;
-
+            
+            if(i==3){
+                paper.AA.push_back(author);
+                printf("%lld %lld %d\n",author.AuId, author.AfId, paper.AA.size());
+                break;
+            }
             paper.AA.push_back(author);
+            printf("%d %lld\n",paper.AA.size(), a[i+1]["AuId"].GetInt64());
         }
+        return paper;
     }
     
+    return paper;
     if(p.HasMember("F")){
         const Value &a = p["F"];
         for(int i = 0; i < a.Size(); ++i){
@@ -172,7 +183,7 @@ inline Paper get_paper(const Value &p){
 vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
-    char *json = new char[10000000];
+    char *json = new char[1000000];
     string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=1000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
@@ -188,11 +199,11 @@ vector<Paper> getEntities(string expr, int items){
 
     getUrl(url.c_str(), json);
 
-    //printf("%s %s\n",url.c_str(),json);
-    
+    printf("%s\n%s\n",url.c_str(),json);
     
     Document document;
     document.Parse(json);
+    
 
     const Value &a = document["entities"];
     for(SizeType i = 0; i < a.Size(); ++i)

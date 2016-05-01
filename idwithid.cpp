@@ -139,6 +139,7 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 	return ans;
 }
 int main(){
+    long long  t1 = clock();
 	freopen("output.txt","w",stdout);
 	vector <vector <long long> > ans = Id2Id(2140251882,2143554828);
 	for (int i = 0;i < ans.size();i++){
@@ -146,5 +147,7 @@ int main(){
 			printf("%lld ",ans[i][j]);
 		printf("\n");
 	}
+    long long t2 = clock();
+    fprintf(stderr, "%f\n",double(t2-t1)/CLOCKS_PER_SEC);
 	return 0;
 }
