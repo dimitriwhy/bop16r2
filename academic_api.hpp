@@ -12,6 +12,9 @@
 using namespace std;
 using namespace rapidjson;
 
+
+double ti = 0;
+
 #define _M          7
 #define _ID         1
 #define _F_FID      2
@@ -90,6 +93,7 @@ size_t save_data(void *ptr, size_t size, size_t nmemb, char* stream){
     size_t written = size * nmemb;
     memcpy(stream + len, ptr, size * nmemb);
     len += strlen(stream + len);
+    stream[len] = '\0';
     return written;
 }
 bool getUrl(const char *url, char *bStr){
@@ -188,8 +192,14 @@ vector<Paper> getEntities(string expr, int items){
             url += _ITEMS[i];
         }
     }
-
+    
+    clock_t ct0, ct1; 
+    struct tms tms0, tms1;
+    
+    ct0 = times (&tms0);
     getUrl(url.c_str(), json);
+    ct1 = times (&tms1);
+    ti += (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
 
     //printf("%s\n%s\n",url.c_str(),json);
     

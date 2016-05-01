@@ -1,4 +1,7 @@
 #include <bits/stdc++.h>
+#include <sys/times.h> 
+#include <unistd.h> 
+#include <time.h> 
 #define REP(i,n) for(int i=0; i<n; i++)
 #define FOR(i,n) for(int i=1; i<=n; i++)
 
@@ -270,6 +273,15 @@ int main(){
 #ifdef QWERTIER
     freopen("in","r",stdin);
 #endif
+    clock_t ct0, ct1; 
+    struct tms tms0, tms1;
+    
+    ct0 = times (&tms0);
     print(au2pp(2134693834ll,2140251882ll));
+    ct1 = times (&tms1);
+    
+    printf("%f %f\n", (ct1-ct0) / (double)sysconf(_SC_CLK_TCK), ti);
+    //printf("%f\n", (t2-t1) / (double)sysconf(_SC_CLK_TCK));
+    //printf("%f\n", (t2-t1) / (double)CLOCKS_PER_SEC);
     return 0;
 }
