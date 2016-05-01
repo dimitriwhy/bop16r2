@@ -4,6 +4,9 @@
 #include <vector>
 #include <string>
 #include <curl/curl.h>
+#include <sys/times.h> 
+#include <unistd.h> 
+#include <time.h> 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"

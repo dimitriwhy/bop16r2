@@ -1,7 +1,4 @@
 #include <bits/stdc++.h>
-#include <sys/times.h> 
-#include <unistd.h> 
-#include <time.h> 
 #define REP(i,n) for(int i=0; i<n; i++)
 #define FOR(i,n) for(int i=1; i<=n; i++)
 
