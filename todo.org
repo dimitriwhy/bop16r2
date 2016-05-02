@@ -1,0 +1,4 @@
+* academic_api
+  add 'CC' to the Class paper
+* idwithid
+  write code to fix when 'CC' of id2 is large.
