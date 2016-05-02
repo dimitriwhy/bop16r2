@@ -97,7 +97,6 @@ size_t save_data(void *ptr, size_t size, size_t nmemb, char* stream){
     size_t written = size * nmemb;
     memcpy(stream + len, ptr, size * nmemb);
     len += strlen(stream + len);
-    stream[len] = '\0';
     return written;
 }
 bool getUrl(const char *url, char *bStr){
@@ -188,7 +187,7 @@ Paper get_paper(const Value &p){
 vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
-    char *json = new char[100000000];
+    char *json = new char[100000000]();
     string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=1000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
@@ -220,6 +219,8 @@ vector<Paper> getEntities(string expr, int items){
     for(SizeType i = 0; i < a.Size(); ++i){
         entities.push_back(get_paper(a[i]));
     }
+
+    delete[] json;
 
     return entities;
 }
