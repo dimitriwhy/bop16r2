@@ -18,7 +18,7 @@ using namespace rapidjson;
 
 double ti = 0;
 
-#define _M          7
+#define _M          8
 #define _ID         1
 #define _F_FID      2
 #define _J_JID      4
@@ -26,7 +26,8 @@ double ti = 0;
 #define _AA_AUID    16
 #define _AA_AFID    32
 #define _RID        64
-const char *_ITEMS[_M] = {"Id", "F.FId", "J.JId", "C.CId", "AA.AuId", "AA.AfId", "RId"};
+#define _CC         128
+const char *_ITEMS[_M] = {"Id", "F.FId", "J.JId", "C.CId", "AA.AuId", "AA.AfId", "RId", "CC"};
 
 namespace Academic
 {
@@ -68,7 +69,7 @@ namespace Academic
         //string Ti ;      // Paper title	                String
         //int Y ;          // Paper year	                Int32
         //string D ;     // Paper date	                Date
-        //int CC ;         // Citation count               Int32
+        int CC ;         // Citation count               Int32
         vector<long long> RId ;     // Reference ID                 Int64
         //vector<string> W ;     // Words from paper title/abs   String
         // tract for full text search
@@ -176,6 +177,11 @@ Paper get_paper(const Value &p){
             paper.RId.push_back(a[i].GetInt64());
     }
     
+    if(p.HasMember("CC"))
+        paper.CC = p["CC"].GetInt();
+    else
+        paper.CC = -1;
+
     return paper;
 }
 
@@ -183,7 +189,7 @@ vector<Paper> getEntities(string expr, int items){
     vector<Paper> entities;
     
     char *json = new char[100000000];
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=10000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
+    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=1000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
     
     int fst = 1;

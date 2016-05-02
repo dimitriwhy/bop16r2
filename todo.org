@@ -1,4 +1,6 @@
-* academic_api
-  add 'CC' to the Class paper
-* idwithid
+* TODO test
+  Use 2-hop to check 3-hop
+* TODO idwithid
   write code to fix when 'CC' of id2 is large.
+* DONE academic_api
+  add 'CC' to the Class paper

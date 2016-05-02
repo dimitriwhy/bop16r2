@@ -12,11 +12,11 @@ int main(){
 #endif
     char *hStr = new char[100000000],*bStr = new char[100000000];
     LL t1 = clock();
-    vector<Paper> entities = getEntities(string("RId=2128635872"), _RID) ;
+    vector<Paper> entities = getEntities(string("RId=2128635872"), _RID | _CC | _ID) ;
     for(auto x : entities){
-        //printf("%lld\n", x.Id);
+        printf("%d %lld\n", x.CC, x.Id);
         for(auto y : x.AA){
-            printf("%lld %lld\n", y.AuId, y.AfId);
+            //printf("%lld %lld\n", y.AuId, y.AfId);
         }
     }
     LL t2 = clock();
