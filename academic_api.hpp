@@ -73,14 +73,6 @@ namespace Academic
         vector<long long> RId ;     // Reference ID                 Int64
         //vector<string> W ;     // Words from paper title/abs   String
         // tract for full text search
-        Paper(){
-            Id = 0;
-            vector<Author> AA = vector<Author>(0);
-        }
-        ~Paper(){
-            AA.clear();
-            RId.clear();
-        }
     };
     class Info{
     public:
@@ -162,7 +154,7 @@ Paper get_paper(const Value &p){
     if(p.HasMember("J") && p["J"].HasMember("JId"))
         paper.J.JId = p["J"]["JId"].GetInt64();
     else
-        paper.C.CId = -1;
+        paper.J.JId = -1;
 
     if(p.HasMember("C") && p["C"].HasMember("CId"))
         paper.C.CId = p["C"]["CId"].GetInt64();
