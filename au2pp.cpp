@@ -3,8 +3,6 @@
 #define FOR(i,n) for(int i=1; i<=n; i++)
 
 #include "academic_api.hpp"
-typedef long long LL;
-using namespace std;
 
 
 namespace AU2PP{
@@ -88,6 +86,7 @@ namespace AU2PP{
             for(auto x : paper_by_au[i].AA){
                 for(auto y : paper.AA){
                     if(x.AuId == y.AuId){
+                        printf("%lld %lld\n", paper_by_au[i].Id, x.AuId);
                         ret.push_back(get_path(4, au_id, paper_by_au[i].Id, x.AuId, id));
                     }
                 }
@@ -252,18 +251,10 @@ namespace AU2PP{
         return ret;
     }
 
-    void print(vector<Path> ans){
-        for(Path &path : ans){
-            printf("[");
-            for(auto &u : path)
-                printf("%lld,",u);
-            printf("]");
-            puts(",");
-        }
-    }
 }
 using namespace AU2PP;
 
+#ifndef PRODUCT
 int main(){
 #ifdef QWERTIER
     freopen("in","r",stdin);
@@ -272,7 +263,7 @@ int main(){
     struct tms tms0, tms1;
     
     ct0 = times (&tms0);
-    print(au2pp(1982462162ll,1502768748ll));
+    print_ans(au2pp(1982462162ll,2122841972ll));
     ct1 = times (&tms1);
     
     printf("%lld\n", (LL)sysconf(_SC_CLK_TCK));
@@ -281,3 +272,4 @@ int main(){
     //printf("%f\n", (t2-t1) / (double)CLOCKS_PER_SEC);
     return 0;
 }
+#endif

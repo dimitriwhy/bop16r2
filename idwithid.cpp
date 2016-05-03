@@ -138,6 +138,8 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 	}
 	return ans;
 }
+
+#ifndef PRODUCT
 int main(){
     long long  t1 = clock();
 	freopen("output.txt","w",stdout);
@@ -151,3 +153,4 @@ int main(){
     fprintf(stderr, "%f\n",double(t2-t1)/CLOCKS_PER_SEC);
 	return 0;
 }
+#endif

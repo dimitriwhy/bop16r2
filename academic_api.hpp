@@ -29,6 +29,10 @@ double ti = 0;
 #define _CC         128
 const char *_ITEMS[_M] = {"Id", "F.FId", "J.JId", "C.CId", "AA.AuId", "AA.AfId", "RId", "CC"};
 
+typedef long long LL;
+typedef vector<LL> Path;
+
+
 namespace Academic
 {
     class Field{
@@ -81,8 +85,23 @@ namespace Academic
         vector<Paper> entities ; // List of Entities  
     };
     
+    void print_ans(vector<Path> ans){
+        cout<<"[";
+        for(int i = 0; i< ans.size(); i++){
+            cout<<"[";
+            for(int j = 0; j < ans[i].size(); j++){
+                cout<< ans[i][j];
+                if(j < ans[i].size() - 1)
+                    cout << ',';
+            }
+            cout<<"]";
+            if(i < ans.size()-1)cout<<",";
+        }
+        cout<<"]";
+    }
 }
 using namespace Academic;
+
 
 int len;
 size_t save_data(void *ptr, size_t size, size_t nmemb, char* stream){
@@ -122,7 +141,6 @@ Paper get_paper(const Value &p){
         paper.Id = p["Id"].GetInt64();
     else
         paper.Id = -1;
-
     if(p.HasMember("AA")){
         const Value &a = p["AA"];
         for(SizeType i = 0; i< a.Size(); ++i){
@@ -140,7 +158,7 @@ Paper get_paper(const Value &p){
             paper.AA.push_back(author);
         }
     }
-    
+
     if(p.HasMember("F")){
         const Value &a = p["F"];
         for(int i = 0; i < a.Size(); ++i){
@@ -201,12 +219,11 @@ vector<Paper> getEntities(string expr, int items){
     ct1 = times (&tms1);
     ti += (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
 
-    //printf("%s\n%s\n",url.c_str(),json);
+    //fprintf(err,"%s\n%s\n",url.c_str(),json);
     
     Document document;
     document.Parse(json);
     
-
     const Value &a = document["entities"];
     for(SizeType i = 0; i < a.Size(); ++i){
         entities.push_back(get_paper(a[i]));

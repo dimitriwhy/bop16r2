@@ -78,8 +78,7 @@ vector<vector<long long>> au2au(long long AuId1, long long AuId2) {
     return ret;
 }
 
-/*
-	simple test
+#ifndef PRODUCT
 #include <iostream>
 #include <cstdlib>
 int main() {
@@ -93,4 +92,4 @@ int main() {
 	system("pause");
 	return 0;
 }
-*/
+#endif
