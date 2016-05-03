@@ -17,12 +17,17 @@ namespace AU2PP{
 /*------------------------Author To Paper--------------------------------*/
 
 
+    int c = 0;
     Path get_path(int cnt, ...){
         va_list args;
         Path ret;
         va_start(args, cnt);
-        while(cnt--)
-            ret.push_back(va_arg(args, LL));
+        while(cnt--){
+            LL tmp;
+            ret.push_back(tmp=va_arg(args, LL));
+            if(tmp==4294953344ll)
+                printf("!!%d\n",c);
+        }
         va_end(args);
         return ret;
     }
@@ -53,7 +58,7 @@ namespace AU2PP{
         }
     }
 
-    void au2pp_3hop(int au_id, int id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ed){
+    void au2pp_3hop(LL au_id, LL id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ed){
         sort(paper_by_au.begin(), paper_by_au.end(), cmp_by_Id);
 
         int n = paper_by_au.size();
@@ -116,7 +121,7 @@ namespace AU2PP{
 
     }
 
-    vector<Path> au2pp(int au_id, int id){
+    vector<Path> au2pp(LL au_id, LL id){
         vector<Paper> paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
         Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID)[0]; // Id paper
         vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID); // Papers by Au
@@ -249,9 +254,11 @@ namespace AU2PP{
 
     void print(vector<Path> ans){
         for(Path &path : ans){
+            printf("[");
             for(auto &u : path)
-                printf("%lld ",u);
-            puts("");
+                printf("%lld,",u);
+            printf("]");
+            puts(",");
         }
     }
 }
@@ -265,7 +272,7 @@ int main(){
     struct tms tms0, tms1;
     
     ct0 = times (&tms0);
-    print(au2pp(2134693834ll,2140251882ll));
+    print(au2pp(1982462162ll,1502768748ll));
     ct1 = times (&tms1);
     
     printf("%lld\n", (LL)sysconf(_SC_CLK_TCK));
