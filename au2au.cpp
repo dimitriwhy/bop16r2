@@ -33,7 +33,7 @@ vector<vector<long long>> au2au(long long AuId1, long long AuId2) {
 				by1[p - entities.begin()] = true;
 				if (au->AfId != -1) affiliations1.push_back(au->AfId);
 			}
-			else if (au->AuId == AuId2) {
+			if (au->AuId == AuId2) {
 				by2[p - entities.begin()] = true;
 				if (au->AfId != -1) affiliations2.push_back(au->AfId);
 			}
@@ -57,11 +57,11 @@ vector<vector<long long>> au2au(long long AuId1, long long AuId2) {
 				ret.push_back(currentpath);
 				break;
 			}
-    //3-hop
-    //	only	Au->P->P->Au
-    currentpath.push_back(AuId2);
-    Paper tmp;
-    for (vector<Paper>::iterator p(entities.begin()); p != entities.end(); ++p)
+	//3-hop
+	//	only	Au->P->P->Au
+	currentpath.push_back(AuId2);
+	Paper tmp;
+	for (vector<Paper>::iterator p(entities.begin()); p != entities.end(); ++p)
 		if (by1[p - entities.begin()])
 			for (vector<id_type>::iterator r(p->RId.begin()); r != p->RId.end(); ++r) {
 				tmp.Id = *r;
@@ -75,21 +75,33 @@ vector<vector<long long>> au2au(long long AuId1, long long AuId2) {
 			}
 	delete[] by1;
 	delete[] by2;
-    return ret;
+	return ret;
 }
 
 #ifndef PRODUCT
 #include <iostream>
 #include <cstdlib>
 int main() {
+	freopen("au2au.txt", "w", stdout);
 	clock_t time = clock();
-	vector<vector<long long>> ret = au2au(2191458383ll, 2329307016ll);
+	vector<vector<long long>> ret = au2au(1982462162, 1982462162);
 	cout << (clock() - time) / (double)CLOCKS_PER_SEC << endl;
+	cout << "[" << endl;
+	bool fi(true);
 	for (auto i : ret) {
-		for (auto j : i) cout << j << ' ';
-		cout << endl;
+		if (fi) fi = false;
+		else cout << "," << endl;
+		bool fj(true);
+		cout << "[";
+		for (auto j : i) {
+			if (fj) fj = false;
+			else cout << ",";
+			cout << j;
+		}
+		cout << "]";
 	}
-	system("pause");
+	cout << endl << "]" << endl;
+	//system("pause");
 	return 0;
 }
 #endif
