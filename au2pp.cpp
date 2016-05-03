@@ -15,7 +15,6 @@ namespace AU2PP{
 /*------------------------Author To Paper--------------------------------*/
 
 
-    int c = 0;
     Path get_path(int cnt, ...){
         va_list args;
         Path ret;
@@ -23,8 +22,6 @@ namespace AU2PP{
         while(cnt--){
             LL tmp;
             ret.push_back(tmp=va_arg(args, LL));
-            if(tmp==4294953344ll)
-                printf("!!%d\n",c);
         }
         va_end(args);
         return ret;
@@ -86,20 +83,19 @@ namespace AU2PP{
             for(auto x : paper_by_au[i].AA){
                 for(auto y : paper.AA){
                     if(x.AuId == y.AuId){
-                        printf("%lld %lld\n", paper_by_au[i].Id, x.AuId);
                         ret.push_back(get_path(4, au_id, paper_by_au[i].Id, x.AuId, id));
                     }
                 }
             }
 
             //Au -> Af -> Au -> Id
-            for(auto x : paper_by_au[i].AA){
+            for(auto &x : paper_by_au[i].AA){
                 au_af_au_id.insert(x.AfId);
             }
 
             //Au -> Id -> Id -> Id
-            for(auto &x : paper_by_au[i].RId){
-                au_id_id_id[x].push_back(paper_by_au[i].Id);
+            for(auto &y : paper_by_au[i].RId){
+                au_id_id_id[y].push_back(paper_by_au[i].Id);
             }
     
         }
@@ -122,8 +118,8 @@ namespace AU2PP{
 
     vector<Path> au2pp(LL au_id, LL id){
         vector<Paper> paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
-        Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID)[0]; // Id paper
-        vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID); // Papers by Au
+        Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID | _AA_AFID)[0]; // Id paper
+        vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID | _RID | _AA_AFID); // Papers by Au
 
         vector<vector<LL> > ret;
         au2pp_1hop(au_id, id, ret, paper);
@@ -222,6 +218,8 @@ namespace AU2PP{
         for(Paper &x : paper_ref_ing2){
             for(auto &y : x.RId){
                 if(id_id_id_au.count(y)){
+                    if(id==44514345ll)
+                        printf("!!");
                     ret.push_back(get_path(4, id, x.Id, y, au_id));
                     if(x.Id == -1)
                         exit(-1);

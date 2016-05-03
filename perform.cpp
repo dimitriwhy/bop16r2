@@ -11,6 +11,7 @@ using namespace std;
 
 const unsigned long STDIN_MAX = 1000000;
 
+bool test_flag = false;
 pair<long long, long long > get_query(const FCGX_Request & request) {
     char * content_length_str = FCGX_GetParam("CONTENT_LENGTH", request.envp);
     unsigned long long content_length = STDIN_MAX;
@@ -30,8 +31,13 @@ pair<long long, long long > get_query(const FCGX_Request & request) {
         // Do not read from stdin if CONTENT_LENGTH is missing
         content_length = 0;
     }
+    FILE* err = fopen("error.txt", "w");
     char *query_string = FCGX_GetParam("QUERY_STRING", request.envp);
 
+    if(*(FCGX_GetParam("SCRIPT_NAME", request.envp) + 1) == 'q')
+        test_flag = false;
+    else
+        test_flag = true;
     pair<long long, long long> ret;
     sscanf(query_string, "id1=%lld&id2=%lld", &ret.first, &ret.second);
     
@@ -106,6 +112,7 @@ int main(void) {
              << "\r\n";
         //cout<<"[" << query.first <<','<< query.second<<']';
         print_ans(get_ans(query.first, query.second));
+        cout<<",[\"ti\":" << ti <<"]" << endl;
         /*
              << "<html>\n"
              << "  <head>\n"

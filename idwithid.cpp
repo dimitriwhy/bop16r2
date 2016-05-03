@@ -65,7 +65,7 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 
 	//3-HOP
 	//p-p-p-p
-	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID);
 	sort(pp2.begin(),pp2.end(),pp_cmp);
 	for (int i = 0;i < pp1.size();i++)
 		for (int j = 0;j < pp1[i].RId.size();j++){

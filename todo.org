@@ -5,3 +5,5 @@
   AND(OR(OR(OR(OR(FID),JID),C),AA),RID)
 * DONE academic_api
   add 'CC' to the Class paper
+* TODO au2pp
+  au -> af -> au -> id (because of homework)
