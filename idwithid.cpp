@@ -16,9 +16,10 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 			tt.push_back(id1);tt.push_back(id2);
 			ans.push_back(tt);
 		}
-	
+
 	//2-HOP
-	//p-p-p
+	//p-p-p 
+    vector <Paper> pp1;
 	string query = string("");
 	for (int i = 0;i < p1[0].RId.size();i++){
 		if (i < p1[0].RId.size() - 1) query += string("OR(");
@@ -27,7 +28,8 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 		else 
 			for (int j = 0;j < p1[0].RId.size() - 1;j ++) query += string(")");
 	}
-	vector <Paper> pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	if (p1[0].RId.size())
+        pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 	for (int i = 0;i < pp1.size();i++)
 		for (int j = 0;j < pp1[i].RId.size();j++)
 			if (pp1[i].RId[j] == id2){
@@ -143,7 +145,7 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 int main(){
     long long  t1 = clock();
 	freopen("output.txt","w",stdout);
-	vector <vector <long long> > ans = Id2Id(2140251882,2143554828);
+	vector <vector <long long> > ans = Id2Id(2332023333LL,2310280492LL);
 	for (int i = 0;i < ans.size();i++){
 		for (int j = 0;j < ans[i].size();j++)
 			printf("%lld ",ans[i][j]);
