@@ -32,15 +32,17 @@ pair<long long, long long > get_query(const FCGX_Request & request) {
         content_length = 0;
     }
     FILE* err = fopen("error.txt", "w");
+    fprintf(err, "%s", FCGX_GetParam("SCRIPT_NAME", request.envp));
+    
+    fclose(err);
+    pair<long long, long long> ret;
     char *query_string = FCGX_GetParam("QUERY_STRING", request.envp);
 
-    if(*(FCGX_GetParam("SCRIPT_NAME", request.envp) + 1) == 'q')
+    if(*((char*)FCGX_GetParam("SCRIPT_NAME", request.envp) + 1) == 'q')
         test_flag = false;
     else
         test_flag = true;
-    pair<long long, long long> ret;
     sscanf(query_string, "id1=%lld&id2=%lld", &ret.first, &ret.second);
-    
     return ret;
 
     /*
@@ -111,8 +113,17 @@ int main(void) {
         cout << "Content-type: application/json\r\n"
              << "\r\n";
         //cout<<"[" << query.first <<','<< query.second<<']';
+        clock_t ct0, ct1; 
+        struct tms tms0, tms1;
+        ct0 = times (&tms0);
+        
         print_ans(get_ans(query.first, query.second));
-        cout<<",[\"ti\":" << ti <<"]" << endl;
+        
+        if(test_flag){
+            ct1 = times (&tms1);
+            double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
+            cout<<",[\"ti\":" << ti1 <<"]" << endl;
+        }
         /*
              << "<html>\n"
              << "  <head>\n"
