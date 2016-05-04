@@ -28,7 +28,7 @@ namespace AU2PP{
     }
 
     void au2pp_1hop(LL au_id, LL id, vector<Path> &ret, Paper &paper){
-        for(auto x : paper.AA){
+        for(auto &x : paper.AA){
             if(x.AuId == au_id){
                 ret.push_back(get_path(2, au_id, id));
                 break;
@@ -53,7 +53,7 @@ namespace AU2PP{
         }
     }
 
-    void au2pp_3hop(LL au_id, LL id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ed){
+    void au2pp_3hop(LL au_id, LL id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ed, vector<Paper> &paper_au_af){
         sort(paper_by_au.begin(), paper_by_au.end(), cmp_by_Id);
 
         int n = paper_by_au.size();
@@ -88,11 +88,6 @@ namespace AU2PP{
                 }
             }
 
-            //Au -> Af -> Au -> Id
-            for(auto &x : paper_by_au[i].AA){
-                au_af_au_id.insert(x.AfId);
-            }
-
             //Au -> Id -> Id -> Id
             for(auto &y : paper_by_au[i].RId){
                 au_id_id_id[y].push_back(paper_by_au[i].Id);
@@ -100,37 +95,60 @@ namespace AU2PP{
     
         }
 
-        //Au -> Af -> Au -> Id
-        for(auto y: paper.AA){
-            if(y.AfId != -1 && au_af_au_id.count(y.AfId))
-                ret.push_back(get_path(4, au_id, y.AfId, y.AuId, id));
-        }
-    
         //Au -> Id -> Id -> Id
         for(auto &p : paper_ref_ed){
             if(au_id_id_id.count(p.Id)){
                 for(auto &x : au_id_id_id[p.Id])
                     ret.push_back(get_path(4, au_id, x, p.Id, id));
             }
-        }
+        }        
 
+        //Au -> Af -> Au -> Id
+        unordered_set<LL> au;
+        for(auto &author : paper.AA)
+            au.insert(author.AuId);
+        unordered_set<LL> af;
+        set<pair<long long, long long> > af_au;
+        for(int i = 0; i < paper_by_au.size(); ++i){
+            for(auto &author : paper_by_au[i].AA){
+                if(author.AuId == au_id && author.AfId != -1)
+                    af.insert(author.AfId);
+            }
+        }
+        for(int i = 0; i < paper_au_af.size(); i++){
+            for(auto &author : paper_au_af[i].AA)
+                if(au.count(author.AuId) && af.count(author.AfId) && !af_au.count(make_pair(author.AfId,author.AuId))){
+                    ret.push_back(get_path(4, au_id, author.AfId, author.AuId, id));
+                    af_au.insert(make_pair(author.AfId, author.AuId));
+                }
+        }
     }
 
     vector<Path> au2pp(LL au_id, LL id){
         vector<Paper> paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
         Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID | _AA_AFID)[0]; // Id paper
         vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID | _RID | _AA_AFID); // Papers by Au
+        
+        vector<Paper> paper_au_af;
+        if(paper.AA.size()){
+            string expr = string("AA.AuId=") + to_string(paper.AA[0].AuId);
+            for(int i = 1; i < paper.AA.size(); ++i){
+                expr = "OR(AA.AuId=" + to_string(paper.AA[i].AuId) + string(",") + expr + string(")");
+            }
+            expr = string("Composite(") + expr + string(")");
+            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
+        }
 
         vector<vector<LL> > ret;
         au2pp_1hop(au_id, id, ret, paper);
         au2pp_2hop(au_id, id, ret, paper_by_au, paper_ref_ed);
-        au2pp_3hop(au_id, id, ret, paper_by_au, paper, paper_ref_ed);
+        au2pp_3hop(au_id, id, ret, paper_by_au, paper, paper_ref_ed, paper_au_af);
         return ret;
     }
 
 
 
-/*------------------------Paper To Author--------------------------------*/
+/*------------------------Paper To Author------------------------------*/
 
     void pp2au_1hop(LL id, LL au_id, vector<Path> &ret, Paper &paper){
         for(auto x : paper.AA){
@@ -155,23 +173,18 @@ namespace AU2PP{
             if(p >= m)
                 break;
             if(paper_by_au[i].Id == paper_adj[p]){
-                vector<LL> path;
-                path.push_back(id);
-                path.push_back(paper_adj[p]);
-                path.push_back(au_id);
-                ret.push_back(path);
+                ret.push_back(get_path(3, id, paper_adj[p], au_id));
             }
         }
     }
 
-    void pp2au_3hop(LL id, LL au_id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ing2, vector<Paper> &paper_ref_ed){
+    void pp2au_3hop(LL id, LL au_id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ing2, vector<Paper> &paper_au_af){
 
         sort(paper_by_au.begin(), paper_by_au.end(), cmp_by_Id);
 
         vector<LL> &paper_ref_ing = paper.RId;
 
         int n = paper_by_au.size();
-        unordered_set<LL> au_af_au_id; // Afs in each path(Au, Af, Au, Id) must be distinct
         unordered_map<LL,vector<LL> > au_id_id_id;
         for(int i = 0; i < n; i++){
  
@@ -179,37 +192,22 @@ namespace AU2PP{
             for(auto x : paper_by_au[i].F){
                 for(auto y : paper.F){
                     if(x.FId == y.FId){
-                        ret.push_back(get_path(4, au_id, paper_by_au[i].Id, x.FId, id));
+                        ret.push_back(get_path(4, id, x.FId, paper_by_au[i].Id, au_id));
                     }
                 }
             }
         
             //Id -> C -> Id -> Au
             if(paper_by_au[i].C == paper.C){
-                ret.push_back(get_path(4, au_id, paper_by_au[i].Id, paper.C.CId, id));
+                ret.push_back(get_path(4, id, paper.C.CId, paper_by_au[i].Id, au_id));
             }
             //Id -> J -> Id -> Au
             if(paper_by_au[i].J == paper.J){
-                ret.push_back(get_path(4, au_id, paper_by_au[i].Id, paper.J.JId, id));
-            }
-
-            //Id -> Au -> Af -> Au
-            for(auto x : paper_by_au[i].AA){
-                for(auto y : paper.AA){
-                    if(x.AuId == y.AuId){
-                        ret.push_back(get_path(4, au_id, paper_by_au[i].Id, x.AuId, id));
-                    }
-                }
+                ret.push_back(get_path(4, id, paper.J.JId, paper_by_au[i].Id, au_id));
             }
 
         }
 
-        //Id -> Au -> Af -> Au
-        for(auto y: paper.AA){
-            if(y.AfId != -1 && au_af_au_id.count(y.AfId))
-                ret.push_back(get_path(4, au_id, y.AfId, y.AuId, id));
-        }
-    
         //Id -> Id -> Id -> Au
         unordered_set<LL> id_id_id_au; //(y)
         for(Paper &p : paper_by_au){
@@ -218,13 +216,29 @@ namespace AU2PP{
         for(Paper &x : paper_ref_ing2){
             for(auto &y : x.RId){
                 if(id_id_id_au.count(y)){
-                    if(id==44514345ll)
-                        printf("!!");
                     ret.push_back(get_path(4, id, x.Id, y, au_id));
-                    if(x.Id == -1)
-                        exit(-1);
                 }
             }
+        }
+        
+        //Id -> Au -> Af -> Au
+        unordered_set<LL> au;
+        for(auto &author : paper.AA)
+            au.insert(author.AuId);
+        unordered_set<LL> af;
+        set<pair<long long, long long> > af_au;
+        for(int i = 0; i < paper_by_au.size(); ++i){
+            for(auto &author : paper_by_au[i].AA){
+                if(author.AuId == au_id && author.AfId != -1)
+                    af.insert(author.AfId);
+            }
+        }
+        for(int i = 0; i < paper_au_af.size(); i++){
+            for(auto &author : paper_au_af[i].AA)
+                if(au.count(author.AuId) && af.count(author.AfId) && !af_au.count(make_pair(author.AfId,author.AuId))){
+                    ret.push_back(get_path(4, id, author.AuId, author.AfId, au_id));
+                    af_au.insert(make_pair(author.AfId, author.AuId));
+                }
         }
     
     }
@@ -232,7 +246,6 @@ namespace AU2PP{
     vector<Path> pp2au(LL id, LL au_id){
         vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID); // Papers by Au
         Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID)[0]; // Id paper
-        vector<Paper> paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
         vector<LL> &paper_ref_ing = paper.RId;
         vector<Paper> paper_ref_ing2;
         if(paper_ref_ing.size() > 0){
@@ -242,10 +255,20 @@ namespace AU2PP{
             paper_ref_ing2 = getEntities(expr, _RID | _ID);
         }
 
+        vector<Paper> paper_au_af;
+        if(paper.AA.size()){
+            string expr = string("AA.AuId=") + to_string(paper.AA[0].AuId);
+            for(int i = 1; i < paper.AA.size(); ++i){
+                expr = "OR(AA.AuId=" + to_string(paper.AA[i].AuId) + string(",") + expr + string(")");
+            }
+            expr = string("Composite(") + expr + string(")");
+            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
+        }
+        
         vector<Path> ret;
         pp2au_1hop(id, au_id, ret, paper);
         pp2au_2hop(id, au_id, ret, paper_by_au, paper);
-        pp2au_3hop(id, au_id, ret, paper_by_au, paper, paper_ref_ing2, paper_ref_ed);
+        pp2au_3hop(id, au_id, ret, paper_by_au, paper, paper_ref_ing2, paper_au_af);
         return ret;
     }
 
@@ -261,7 +284,9 @@ int main(){
     struct tms tms0, tms1;
     
     ct0 = times (&tms0);
-    print_ans(au2pp(1982462162ll,2122841972ll));
+    print_ans(au2pp(
+      1982462162ll, 
+      2122841972ll));
     ct1 = times (&tms1);
     
     printf("%lld\n", (LL)sysconf(_SC_CLK_TCK));
