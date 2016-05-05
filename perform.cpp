@@ -31,39 +31,32 @@ pair<long long, long long > get_query(const FCGX_Request & request) {
         // Do not read from stdin if CONTENT_LENGTH is missing
         content_length = 0;
     }
-    FILE* err = fopen("error.txt", "w");
-    fprintf(err, "%s", FCGX_GetParam("SCRIPT_NAME", request.envp));
     
-    fclose(err);
     pair<long long, long long> ret;
+    
+    char c = *((char*)FCGX_GetParam("SCRIPT_NAME", request.envp) + 1);
+    if(c == 'q')
+        test_flag = false;
+    else if(c == 't')
+        test_flag = true;
+    else
+        return ret;
+    
+    FILE* err = fopen("error.log", "a+");
+    fprintf(err, "SCRIPT_NAME=%s\n", FCGX_GetParam("SCRIPT_NAME", request.envp));
+    fclose(err);
+    
     char *query_string = FCGX_GetParam("QUERY_STRING", request.envp);
 
-    if(*((char*)FCGX_GetParam("SCRIPT_NAME", request.envp) + 1) == 'q')
-        test_flag = false;
-    else
-        test_flag = true;
-    sscanf(query_string, "id1=%lld&id2=%lld", &ret.first, &ret.second);
+    sscanf(query_string, "id2=%lld&id1=%lld", &ret.second, &ret.first);
     return ret;
-
-    /*
-    char * content_buffer = new char[content_length];
-    cin.read(content_buffer, content_length);
-    content_length = cin.gcount();
-    // Chew up any remaining stdin - this shouldn't be necessary
-    // but is because mod_fastcgi doesn't handle it correctly.
-
-    // ignore() doesn't set the eof bit in some versions of glibc++
-    // so use gcount() instead of eof()...
-    do cin.ignore(1024); while (cin.gcount() == 1024);
-
-    string content(content_buffer, content_length);
-    delete [] content_buffer;
-
-    return content;
-    */
 }
 
 vector<Path> get_ans(LL id1, LL id2){
+    if(!id1 || !id2){
+        vector<Path> ret;
+        return ret;
+    }
     bool pp1 = false, pp2 = false;
     vector<Paper> chk = getEntities(string("OR(Id=") + to_string(id1) + string(",Id=") + to_string(id2) + string(")"), _ID | _AA_AUID);
     for(auto &p : chk){
@@ -76,9 +69,8 @@ vector<Path> get_ans(LL id1, LL id2){
         return Id2Id(id1, id2);
     else if(pp1)
         return pp2au(id1, id2);
-    else if(pp2){
+    else if(pp2)
         return au2pp(id1, id2);
-    }
     else
         return au2au(id1, id2);
 }
@@ -112,29 +104,28 @@ int main(void) {
 
         cout << "Content-type: application/json\r\n"
              << "\r\n";
-        //cout<<"[" << query.first <<','<< query.second<<']';
         clock_t ct0, ct1; 
         struct tms tms0, tms1;
         ct0 = times (&tms0);
-        
-        print_ans(get_ans(query.first, query.second));
+
+        printf("%lld %lld\n", query.first, query.second);
+        try{        
+            print_ans(get_ans(query.first, query.second));
+            throw "aaa";
+        }catch(...){
+            time_t nowtime = time(NULL);
+            struct tm *ptm;  
+            ptm=localtime(&nowtime);
+            FILE* err = fopen("error.log", "a+");
+            fprintf(err, "%d %d %d %d:%d:%d %lld %lld\n", ptm->tm_year+1900, ptm->tm_mon+1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, query.first, query.second);
+            fclose(err);
+        }
         
         if(test_flag){
             ct1 = times (&tms1);
             double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
             cout<<",[\"ti\":" << ti1 <<"]" << endl;
         }
-        /*
-             << "<html>\n"
-             << "  <head>\n"
-             << "    <title>Hello, World!</title>\n"
-             << "  </head>\n"
-             << "  <body>\n"
-             << "    <h1>Hello " << content.first << content.second << " from " << uri << " !</h1>\n"
-             << "  </body>\n"
-             << "</html>\n";
-        */
-        // Note: the fcgi_streambuf destructor will auto flush
     }
 
 // restore stdio streambufsr
