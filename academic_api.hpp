@@ -141,6 +141,7 @@ Paper get_paper(const Value &p){
         paper.Id = p["Id"].GetInt64();
     else
         paper.Id = -1;
+    
     if(p.HasMember("AA")){
         const Value &a = p["AA"];
         for(SizeType i = 0; i< a.Size(); ++i){
@@ -178,7 +179,6 @@ Paper get_paper(const Value &p){
         paper.C.CId = p["C"]["CId"].GetInt64();
     else
         paper.C.CId = -1;
-
 
     if(p.HasMember("RId")){
         const Value &a = p["RId"];
@@ -219,7 +219,7 @@ vector<Paper> getEntities(string expr, int items){
     ct1 = times (&tms1);
     ti += (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
 
-    //fprintf(err,"%s\n%s\n",url.c_str(),json);
+    //printf("111%s\n%s\n",url.c_str(),json);
     
     Document document;
     document.Parse(json);

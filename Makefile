@@ -17,3 +17,6 @@ au2pp:
 
 perform:
 	$(CMP_CMD) perform.cpp -o perform$(OPT) -lfcgi++ -lcurl -lfcgi
+
+idwithid:
+	$(CMP_CMD) idwithid.cpp -o idwithid$(OPT) -lcurl -g
