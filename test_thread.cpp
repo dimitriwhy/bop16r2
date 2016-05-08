@@ -30,14 +30,15 @@ void f2(int& n)
 }
 
 void f3(){
-    string exp1 = string("RId=2128635872");
-    string exp2 = string("RId=2100837269");
+    string exp1 = string("Id=2128635872");
+    string exp2 = string("Id=2100837269");
     getEntities(exp1, _ID);
     getEntities(exp2, _ID);
 }
 void f4(){
-    string exp1 = string("RId=2128635872");
-    string exp2 = string("RId=2100837269");
+    cout << "#1:" << endl;
+    string exp1 = string("Id=2128635872");
+    string exp2 = string("Id=2100837269");
     std::thread t1(getEntities, exp1, _ID);
     std::thread t2(getEntities, exp2, _ID);
     t1.join();
@@ -55,6 +56,10 @@ int main(){
     */
     curl_global_init(CURL_GLOBAL_ALL);
     f3();
+    cout << "Finished" << endl;
+    cout << ti <<endl;
+    ti = 0;
+    f4();
     cout << "Finished" << endl;
     cout << ti <<endl;
     return 0;

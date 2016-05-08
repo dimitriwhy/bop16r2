@@ -103,11 +103,10 @@ namespace Academic
 using namespace Academic;
 
 
-int len;
-size_t save_data(void *ptr, size_t size, size_t nmemb, char* stream){
+size_t save_data(void *ptr, size_t size, size_t nmemb, pair<char*,int> *stream){
     size_t written = size * nmemb;
-    memcpy(stream + len, ptr, size * nmemb);
-    len += strlen(stream + len);
+    memcpy(stream->first + stream->second, ptr, size * nmemb);
+    stream->second += strlen(stream->first + stream->second);
     return written;
 }
 bool getUrl(const char *url, char *bStr){
@@ -119,18 +118,21 @@ bool getUrl(const char *url, char *bStr){
     curl = curl_easy_init(); 
     if (curl)
     {
-        len = 0;
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_URL, url);
-        
+
+        int len = 0;
+        pair<char*, int> stream = make_pair(bStr, len);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, bStr);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
         
-        res = curl_easy_perform(curl);   
+        res = curl_easy_perform(curl);
+        /*
         if (res != 0) {
             curl_slist_free_all(headers);
             curl_easy_cleanup(curl);
         }
+        */
         return true;
     }
 }
@@ -219,7 +221,7 @@ vector<Paper> getEntities(string expr, int items){
     ct1 = times (&tms1);
     ti += (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
 
-    //printf("111%s\n%s\n",url.c_str(),json);
+    printf("111%s\n%s\n",url.c_str(),json);
     
     Document document;
     document.Parse(json);
