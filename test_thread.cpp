@@ -55,12 +55,19 @@ int main(){
     t4.join();
     */
     curl_global_init(CURL_GLOBAL_ALL);
+    clock_t ct0, ct1; 
+    struct tms tms0, tms1;
+    
+    ct0 = times (&tms0);
     f3();
+    ct1 = times (&tms1);
     cout << "Finished" << endl;
-    cout << ti <<endl;
-    ti = 0;
+    cout << (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK) << endl;
+
+    ct0 = times(&tms0);
     f4();
+    ct1 = times (&tms1);
     cout << "Finished" << endl;
-    cout << ti <<endl;
+    cout << (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK) << endl;
     return 0;
 }
