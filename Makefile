@@ -8,7 +8,8 @@ endif
 
 CMP_CMD = g++ --std=gnu++11 -O3
 
-.PHONY: test au2pp
+.PHONY: test au2pp perform idwithid test_thread
+
 test:
 	$(CMP_CMD) test.cpp -o test$(OPT) -lcurl
 
@@ -20,3 +21,6 @@ perform:
 
 idwithid:
 	$(CMP_CMD) idwithid.cpp -o idwithid$(OPT) -lcurl -g
+
+test_thread:
+	$(CMP_CMD) test_thread.cpp -o test_thread.out -pthread -lcurl
