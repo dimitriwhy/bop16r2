@@ -98,6 +98,7 @@ namespace AU2PP{
         //Au -> Id -> Id -> Id
         for(auto &p : paper_ref_ed){
             if(au_id_id_id.count(p.Id)){
+                printf("%d\n", p.Id);
                 for(auto &x : au_id_id_id[p.Id])
                     ret.push_back(get_path(4, au_id, x, p.Id, id));
             }
@@ -124,19 +125,25 @@ namespace AU2PP{
         }
     }
 
-    void f1(LL au_id, LL id, vector<Paper> &paper_ref_ed){
-        paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
-    }
-    void f2(LL au_id, LL id, Paper &paper, vector<Paper> &paper_au_af){
-        paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID | _AA_AFID)[0];
+    void f21(Paper paper, vector<Paper> &paper_ref_ed){
+        paper_ref_ed = getEntities(string("RId=") + to_string(paper.Id), _ID, paper.CC>=10000); /// Papers that refers to Id
+    } 
+    void f22(Paper paper, vector<Paper> &paper_au_af){
         if(paper.AA.size()){
             string expr = string("AA.AuId=") + to_string(paper.AA[0].AuId);
             for(int i = 1; i < paper.AA.size(); ++i){
                 expr = "OR(AA.AuId=" + to_string(paper.AA[i].AuId) + string(",") + expr + string(")");
             }
             expr = string("Composite(") + expr + string(")");
-            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID, true);
+            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
         }
+    }
+    void f2(LL au_id, LL id, Paper &paper, vector<Paper> &paper_au_af, vector<Paper> &paper_ref_ed){
+        paper = getEntities(string("Id=") + to_string(id), _ID | _F_FID | _C_CID | _J_JID | _AA_AUID | _AA_AFID | _CC)[0];
+        thread t21(f21, paper, ref(paper_ref_ed));
+        thread t22(f22, paper, ref(paper_au_af));
+        t21.join();
+        t22.join();
     }
     void f3(LL au_id, LL id, vector<Paper> &paper_by_au){
         paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID | _RID | _AA_AFID);
@@ -148,10 +155,8 @@ namespace AU2PP{
         
         vector<Paper> paper_au_af;
 
-        thread t1(f1, au_id, id, ref(paper_ref_ed));
-        thread t2(f2, au_id, id, ref(paper), ref(paper_au_af));
+        thread t2(f2, au_id, id, ref(paper), ref(paper_au_af), ref(paper_ref_ed));
         thread t3(f3, au_id, id, ref(paper_by_au));
-        t1.join();
         t2.join();
         t3.join();
         
