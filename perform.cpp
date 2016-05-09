@@ -112,13 +112,12 @@ int main(void) {
         try{        
             print_ans(get_ans(query.first, query.second));
             ct1 = times (&tms1);
-            throw "aaa";
+            double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
+            printf("%f\n",ti1);
         }catch(...){
             time_t nowtime = time(NULL);
             struct tm *ptm;  
             ptm=localtime(&nowtime);
-            double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
-            printf("%f\n",ti);
             FILE* err = fopen("error.log", "a+");
             fprintf(err, "%d %d %d %d:%d:%d %lld %lld\n", ptm->tm_year+1900, ptm->tm_mon+1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, query.first, query.second);
             fclose(err);
