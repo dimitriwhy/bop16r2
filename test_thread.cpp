@@ -30,19 +30,37 @@ void f2(int& n)
 }
 
 void f3(){
-    string exp1 = string("Id=2128635872");
-    string exp2 = string("Id=2100837269");
+    string exp1 = string("RId=2128635872&count=10000");
+    //string exp2 = string("Id=2100837269");
     getEntities(exp1, _ID);
-    getEntities(exp2, _ID);
+    //getEntities(exp2, _ID);
 }
 void f4(){
+    /*
     cout << "#1:" << endl;
-    string exp1 = string("Id=2128635872");
+    string exp1 = string("RId=2128635872&count=1000");
     string exp2 = string("Id=2100837269");
     std::thread t1(getEntities, exp1, _ID);
-    std::thread t2(getEntities, exp2, _ID);
+    std::thread t2(getEntities, exp1, _ID);
+    std::thread t3(getEntities, exp1, _ID);
+    std::thread t4(getEntities, exp1, _ID);
+    std::thread t5(getEntities, exp1, _ID);
+    std::thread t6(getEntities, exp1, _ID);
+    std::thread t7(getEntities, exp1, _ID);
+    std::thread t8(getEntities, exp1, _ID);
+    std::thread t9(getEntities, exp1, _ID);
+    std::thread t10(getEntities, exp1, _ID);
     t1.join();
     t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
+    t6.join();
+    t7.join();
+    t8.join();
+    t9.join();
+    t10.join();
+    */
 }
 int main(){
     /*
@@ -54,6 +72,8 @@ int main(){
     t2.join();
     t4.join();
     */
+
+    /*
     curl_global_init(CURL_GLOBAL_ALL);
     clock_t ct0, ct1; 
     struct tms tms0, tms1;
@@ -69,5 +89,9 @@ int main(){
     ct1 = times (&tms1);
     cout << "Finished" << endl;
     cout << (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK) << endl;
+    */
+    curl_global_init(CURL_GLOBAL_ALL);
+    vector<Paper> pp = getEntities(string("RId=2128635872"), _ID, true);
+    printf("%d\n", pp.size());
     return 0;
 }

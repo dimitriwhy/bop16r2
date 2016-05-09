@@ -1,5 +1,5 @@
-#ifndef ACADEMIC_API_H
-#define ACADEMIC_API_H
+#ifndef ACADEMIC_API_HPP
+#define ACADEMIC_API_HPP
 
 #include <vector>
 #include <string>
@@ -196,13 +196,34 @@ Paper get_paper(const Value &p){
     return paper;
 }
 
-vector<Paper> getEntities(string expr, int items){
+void get_entities_from_url(string url, vector<Paper> &entities){
+    char *json = new char[10000000]();
+    getUrl(url.c_str(), json);
+
+    Document document;
+    document.Parse(json);
+
+    //printf("%s %s\n", url.c_str(), json);
+    const Value &a = document["entities"];
+    if(a.IsArray())
+        for(SizeType i = 0; i < a.Size(); ++i)
+            entities.push_back(get_paper(a[i]));
+
+    //printf("=======\n=======\n%s\n%d\n%d\n", url.c_str(), a.IsArray()?a.Size():0, document.HasMember("aborted"));
+    if(a.IsArray() && a.Size() == 1000)
+        cout<<"OK"<<endl;
+    delete[] json;
+    
+}
+
+vector<Paper> getEntities(string expr, int items, bool many = false){
     vector<Paper> entities;
     
-    char *json = new char[100000000]();
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?count=200000&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
+    char *json = new char[10000]();
+    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&count=1000");
     url += "&expr=" + expr + "&attributes=";
-    
+
+    string attr;
     int fst = 1;
     for (int i = 0; i < _M; ++i){
         if( (items >> i ) & 1 ){
@@ -212,28 +233,32 @@ vector<Paper> getEntities(string expr, int items){
             url += _ITEMS[i];
         }
     }
-    
-    clock_t ct0, ct1; 
-    struct tms tms0, tms1;
-    
-    ct0 = times (&tms0);
-    getUrl(url.c_str(), json);
-    ct1 = times (&tms1);
-    ti += (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
 
-    printf("111%s\n%s\n",url.c_str(),json);
-    
     Document document;
-    document.Parse(json);
     
-    const Value &a = document["entities"];
-    for(SizeType i = 0; i < a.Size(); ++i){
-        entities.push_back(get_paper(a[i]));
+    const int N_PER_Q = 1000;
+    if(many){
+        string url2 = string("https://oxfordhk.azure-api.net/academic/v1.0/calchistogram?count=0&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&expr=") + expr;
+        getUrl(url2.c_str(), json);
+        document.Parse(json);
+        int tot = document["num_entities"].GetInt();
+        printf("%d\n", tot);
+        if(tot <= 0)
+            return entities;
+        int t_num = (tot - 1) / N_PER_Q + 1;
+        thread t[t_num];
+        for(int i = 0; i < t_num; i++){
+            string str = url + string("&offset=") + to_string(i*N_PER_Q);
+            t[i] = thread(get_entities_from_url, str, ref(entities));
+        }
+        for(int i = 0; i < t_num; i++)
+            t[i].join();
+        return entities;
+    }else{
+        get_entities_from_url(url, entities);
     }
-
+    
     delete[] json;
-
-    return entities;
 }
 
 #endif
