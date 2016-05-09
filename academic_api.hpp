@@ -200,9 +200,15 @@ Paper get_paper(const Value &p){
 void get_entities_from_url(string url, vector<Paper> &entities){
     char *json = new char[100000000]();
 
+    clock_t ct0, ct1; 
+    struct tms tms0, tms1;
+    
     Document document;
     do{
+        ct0 = times (&tms0);
         getUrl(url.c_str(), json);
+        ct1 = times(&tms1);
+        ti = (ct1 - ct0) / double(sysconf(_SC_CLK_TCK));
         document.Parse(json);
         if(!document.IsObject()){
             cout<<url<<' '<<strlen(json)<<endl<<json<<endl;

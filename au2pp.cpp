@@ -4,28 +4,28 @@
 
 #include "academic_api.hpp"
 
+const bool cmp_by_Id(const Paper& i, const Paper& j){
+    return i.Id < j.Id;
+}
 
-namespace AU2PP{
-    const bool cmp_by_Id(const Paper& i, const Paper& j){
-        return i.Id < j.Id;
+Path get_path(int cnt, ...){
+    va_list args;
+    Path ret;
+    va_start(args, cnt);
+    while(cnt--){
+        LL tmp;
+        ret.push_back(tmp=va_arg(args, LL));
     }
+    va_end(args);
+    return ret;
+}
+typedef vector<LL> Path;
+namespace AU2PP{
 
-    typedef vector<LL> Path;
 
 /*------------------------Author To Paper--------------------------------*/
 
 
-    Path get_path(int cnt, ...){
-        va_list args;
-        Path ret;
-        va_start(args, cnt);
-        while(cnt--){
-            LL tmp;
-            ret.push_back(tmp=va_arg(args, LL));
-        }
-        va_end(args);
-        return ret;
-    }
 
     void au2pp_1hop(LL au_id, LL id, vector<Path> &ret, Paper &paper){
         for(auto &x : paper.AA){
@@ -124,21 +124,37 @@ namespace AU2PP{
         }
     }
 
-    vector<Path> au2pp(LL au_id, LL id){
-        vector<Paper> paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
-        Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID | _AA_AFID)[0]; // Id paper
-        vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID | _RID | _AA_AFID); // Papers by Au
-        
-        vector<Paper> paper_au_af;
+    void f1(LL au_id, LL id, vector<Paper> &paper_ref_ed){
+        paper_ref_ed = getEntities(string("RId=") + to_string(id), _ID); /// Papers that refers to Id
+    }
+    void f2(LL au_id, LL id, Paper &paper, vector<Paper> &paper_au_af){
+        paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID | _AA_AFID)[0];
         if(paper.AA.size()){
             string expr = string("AA.AuId=") + to_string(paper.AA[0].AuId);
             for(int i = 1; i < paper.AA.size(); ++i){
                 expr = "OR(AA.AuId=" + to_string(paper.AA[i].AuId) + string(",") + expr + string(")");
             }
             expr = string("Composite(") + expr + string(")");
-            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
+            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID, true);
         }
+    }
+    void f3(LL au_id, LL id, vector<Paper> &paper_by_au){
+        paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID | _RID | _AA_AFID);
+    }
+    vector<Path> au2pp(LL au_id, LL id){
+        vector<Paper> paper_ref_ed; /// Papers that refers to Id
+        Paper paper ; // Id paper
+        vector<Paper> paper_by_au; // Papers by Au
+        
+        vector<Paper> paper_au_af;
 
+        thread t1(f1, au_id, id, ref(paper_ref_ed));
+        thread t2(f2, au_id, id, ref(paper), ref(paper_au_af));
+        thread t3(f3, au_id, id, ref(paper_by_au));
+        t1.join();
+        t2.join();
+        t3.join();
+        
         vector<vector<LL> > ret;
         au2pp_1hop(au_id, id, ret, paper);
         au2pp_2hop(au_id, id, ret, paper_by_au, paper_ref_ed);
@@ -146,8 +162,8 @@ namespace AU2PP{
         return ret;
     }
 
-
-
+}
+namespace PP2AU{
 /*------------------------Paper To Author------------------------------*/
 
     void pp2au_1hop(LL id, LL au_id, vector<Path> &ret, Paper &paper){
@@ -159,7 +175,7 @@ namespace AU2PP{
         }
         return;
     }
-
+    
     void pp2au_2hop(LL id, LL au_id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper){
         vector<LL> paper_adj = paper.RId;
 
@@ -177,6 +193,7 @@ namespace AU2PP{
             }
         }
     }
+
 
     void pp2au_3hop(LL id, LL au_id, vector<Path> &ret, vector<Paper> &paper_by_au, Paper &paper, vector<Paper> &paper_ref_ing2, vector<Paper> &paper_au_af){
 
@@ -243,11 +260,46 @@ namespace AU2PP{
     
     }
 
+    void f1(LL id, LL au_id, vector<Paper> &paper_by_au){
+        paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID); // Papers by Au
+    }
+    void f21(vector<LL> paper_ref_ing, vector<Paper> &paper_ref_ing2){
+        if(paper_ref_ing.size() > 0){
+            string expr = string("Id=") + to_string(paper_ref_ing[0]);
+            for(int i = 1; i < paper_ref_ing.size(); i++)
+                expr = string("OR(Id=") + to_string(paper_ref_ing[i]) + string(",") + expr + string(")");
+            paper_ref_ing2 = getEntities(expr, _RID | _ID);
+        }
+    }
+    void f22(vector<Author> AA, vector<Paper> &paper_au_af){
+        if(AA.size()){
+            string expr = string("AA.AuId=") + to_string(AA[0].AuId);
+            for(int i = 1; i < AA.size(); ++i){
+                expr = "OR(AA.AuId=" + to_string(AA[i].AuId) + string(",") + expr + string(")");
+            }
+            expr = string("Composite(") + expr + string(")");
+            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
+        }
+    }
+    void f2(LL id, LL au_id, Paper &paper, vector<LL> &paper_ref_ing, vector<Paper> &paper_ref_ing2, vector<Paper> &paper_au_af){
+        paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID)[0]; // Id paper
+        paper_ref_ing = paper.RId;
+        thread t21(f21, paper_ref_ing, ref(paper_ref_ing2));
+        thread t22(f22, paper.AA, ref(paper_au_af));
+        t21.join();
+        t22.join();
+    }
     vector<Path> pp2au(LL id, LL au_id){
-        vector<Paper> paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID); // Papers by Au
-        Paper paper = getEntities(string("Id=") + to_string(id), _F_FID | _C_CID | _J_JID | _AA_AUID)[0]; // Id paper
-        vector<LL> &paper_ref_ing = paper.RId;
+        vector<Paper> paper_by_au; // Papers by Au
+        Paper paper; // Id paper
+        vector<LL> paper_ref_ing;
         vector<Paper> paper_ref_ing2;
+        vector<Paper> paper_au_af;
+        thread t1(f1, id, au_id, ref(paper_by_au));
+        thread t2(f2, id, au_id, ref(paper), ref(paper_ref_ing), ref(paper_ref_ing2), ref(paper_au_af));
+        t1.join();
+        t2.join();
+        /*
         if(paper_ref_ing.size() > 0){
             string expr = string("Id=") + to_string(paper_ref_ing[0]);
             for(int i = 1; i < paper_ref_ing.size(); i++)
@@ -255,7 +307,6 @@ namespace AU2PP{
             paper_ref_ing2 = getEntities(expr, _RID | _ID);
         }
 
-        vector<Paper> paper_au_af;
         if(paper.AA.size()){
             string expr = string("AA.AuId=") + to_string(paper.AA[0].AuId);
             for(int i = 1; i < paper.AA.size(); ++i){
@@ -264,7 +315,7 @@ namespace AU2PP{
             expr = string("Composite(") + expr + string(")");
             paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
         }
-        
+        */
         vector<Path> ret;
         pp2au_1hop(id, au_id, ret, paper);
         pp2au_2hop(id, au_id, ret, paper_by_au, paper);
