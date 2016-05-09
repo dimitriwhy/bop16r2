@@ -256,7 +256,7 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
     
     if(many){
         string url2 = string("https://oxfordhk.azure-api.net/academic/v1.0/calchistogram?count=0&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&expr=") + expr;
-        const int DIV = 1;
+        const int DIV = 5;
         //cout<<url2<<endl<<json<<endl;
         do{
             getUrl(url2.c_str(), json);
@@ -266,7 +266,7 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         
         int tot = document["num_entities"].GetInt();
         int N_PER_Q = (tot-1) / DIV + 1;
-        //printf("%d\n", tot);
+        printf("tot:%d %s\n", tot, expr.c_str());
         if(tot <= 0)
             return entities;
         int t_num = (tot - 1) / N_PER_Q + 1;
@@ -278,6 +278,7 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         }
         for(int i = 0; i < DIV; i++)
             t[i].join();
+        printf("entities:%d\n", (int)entities.size());
         return entities;
     }else{
         clock_t ct0, ct1; 
