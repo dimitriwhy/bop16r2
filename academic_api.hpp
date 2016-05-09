@@ -211,7 +211,7 @@ void get_entities_from_url(string url, vector<Paper> &entities){
         ti = (ct1 - ct0) / double(sysconf(_SC_CLK_TCK));
         document.Parse(json);
         if(!document.IsObject()){
-            cout<<url<<' '<<strlen(json)<<endl<<json<<endl;
+            //cout<<url<<' '<<strlen(json)<<endl<<json<<endl;
         }
         /*
         else
