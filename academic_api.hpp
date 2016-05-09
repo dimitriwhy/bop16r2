@@ -257,16 +257,16 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
     if(many){
         string url2 = string("https://oxfordhk.azure-api.net/academic/v1.0/calchistogram?count=0&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&expr=") + expr;
         const int DIV = 1;
-        cout<<url2<<endl<<json<<endl;
+        //cout<<url2<<endl<<json<<endl;
         do{
             getUrl(url2.c_str(), json);
             document.Parse(json);
-            cout<<strlen(json)<<endl<<json<<endl;
+            //cout<<strlen(json)<<endl<<json<<endl;
         }while(document.HasMember("aborted"));
         
         int tot = document["num_entities"].GetInt();
         int N_PER_Q = (tot-1) / DIV + 1;
-        printf("%d\n", tot);
+        //printf("%d\n", tot);
         if(tot <= 0)
             return entities;
         int t_num = (tot - 1) / N_PER_Q + 1;
@@ -280,7 +280,13 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
             t[i].join();
         return entities;
     }else{
+        clock_t ct0, ct1; 
+        struct tms tms0, tms1;
+        ct0 = times (&tms0);
         get_entities_from_url(url+string("&count=10000"), entities);
+        ct1 = times(&tms1);
+        double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
+        printf("%f\n",ti1);
     }
     
     delete[] json;
