@@ -68,9 +68,9 @@ vector<Path> get_ans(LL id1, LL id2){
     if(pp1 && pp2)
         return Id2Id(id1, id2);
     else if(pp1)
-        return pp2au(id1, id2);
+        return PP2AU::pp2au(id1, id2);
     else if(pp2)
-        return au2pp(id1, id2);
+        return AU2PP::au2pp(id1, id2);
     else
         return au2au(id1, id2);
 }
