@@ -91,7 +91,13 @@ int main(){
     cout << (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK) << endl;
     */
     curl_global_init(CURL_GLOBAL_ALL);
-    vector<Paper> pp = getEntities(string("RId=2128635872"), _ID, true);
-    printf("%d\n", pp.size());
+    clock_t ct0, ct1; 
+    struct tms tms0, tms1;
+    
+    ct0 = times (&tms0);
+    vector<Paper> pp = getEntities(string("RId=2106787323"), _ID, true);
+    ct1 = times (&tms1);
+    cout<<pp.size()<<endl;
+    cout<<pp.size() << ' ' << (ct1 - ct0) / double(sysconf(_SC_CLK_TCK)) << endl;
     return 0;
 }

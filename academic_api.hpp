@@ -107,6 +107,7 @@ size_t save_data(void *ptr, size_t size, size_t nmemb, pair<char*,int> *stream){
     size_t written = size * nmemb;
     memcpy(stream->first + stream->second, ptr, size * nmemb);
     stream->second += strlen(stream->first + stream->second);
+    stream->first[stream->second] = 0;
     return written;
 }
 bool getUrl(const char *url, char *bStr){
@@ -114,27 +115,27 @@ bool getUrl(const char *url, char *bStr){
     CURLcode res;
     
     struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "Accept: T-shirt");
+    headers = curl_slist_append(headers, "Accept: ts");
     curl = curl_easy_init(); 
-    if (curl)
-    {
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 300L);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L); 
 
-        int len = 0;
-        pair<char*, int> stream = make_pair(bStr, len);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
+    int len = 0;
+    pair<char*, int> stream = make_pair(bStr, len);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, save_data);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
         
-        res = curl_easy_perform(curl);
+    res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
         /*
         if (res != 0) {
             curl_slist_free_all(headers);
             curl_easy_cleanup(curl);
         }
         */
-        return true;
-    }
+    return true;
 }
 
 Paper get_paper(const Value &p){
@@ -197,11 +198,20 @@ Paper get_paper(const Value &p){
 }
 
 void get_entities_from_url(string url, vector<Paper> &entities){
-    char *json = new char[10000000]();
-    getUrl(url.c_str(), json);
+    char *json = new char[100000000]();
 
     Document document;
-    document.Parse(json);
+    do{
+        getUrl(url.c_str(), json);
+        document.Parse(json);
+        if(!document.IsObject()){
+            cout<<url<<' '<<strlen(json)<<endl<<json<<endl;
+        }
+        /*
+        else
+            cout<<strlen(json)<<' '<<document.IsObject()<<' '<<document.HasMember("aborted")<<' '<<url<<endl;
+        */
+    }while((!document.IsObject()) || (document.HasMember("aborted")));
 
     //printf("%s %s\n", url.c_str(), json);
     const Value &a = document["entities"];
@@ -210,8 +220,10 @@ void get_entities_from_url(string url, vector<Paper> &entities){
             entities.push_back(get_paper(a[i]));
 
     //printf("=======\n=======\n%s\n%d\n%d\n", url.c_str(), a.IsArray()?a.Size():0, document.HasMember("aborted"));
-    if(a.IsArray() && a.Size() == 1000)
+    /*
+    if(a.IsArray() && a.Size() == 10000)
         cout<<"OK"<<endl;
+    */
     delete[] json;
     
 }
@@ -220,7 +232,7 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
     vector<Paper> entities;
     
     char *json = new char[10000]();
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&count=1000");
+    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
 
     string attr;
@@ -236,26 +248,33 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
 
     Document document;
     
-    const int N_PER_Q = 1000;
     if(many){
         string url2 = string("https://oxfordhk.azure-api.net/academic/v1.0/calchistogram?count=0&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&expr=") + expr;
-        getUrl(url2.c_str(), json);
-        document.Parse(json);
+        const int DIV = 1;
+        cout<<url2<<endl<<json<<endl;
+        do{
+            getUrl(url2.c_str(), json);
+            document.Parse(json);
+            cout<<strlen(json)<<endl<<json<<endl;
+        }while(document.HasMember("aborted"));
+        
         int tot = document["num_entities"].GetInt();
+        int N_PER_Q = (tot-1) / DIV + 1;
         printf("%d\n", tot);
         if(tot <= 0)
             return entities;
         int t_num = (tot - 1) / N_PER_Q + 1;
         thread t[t_num];
-        for(int i = 0; i < t_num; i++){
+        url += string("&count=") + to_string(N_PER_Q);
+        for(int i = 0; i < DIV; i++){
             string str = url + string("&offset=") + to_string(i*N_PER_Q);
             t[i] = thread(get_entities_from_url, str, ref(entities));
         }
-        for(int i = 0; i < t_num; i++)
+        for(int i = 0; i < DIV; i++)
             t[i].join();
         return entities;
     }else{
-        get_entities_from_url(url, entities);
+        get_entities_from_url(url+string("&count=10000"), entities);
     }
     
     delete[] json;
