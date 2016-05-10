@@ -238,7 +238,7 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
     vector<Paper> entities;
     
     char *json = new char[10000]();
-    string url("https://oxfordhk.azure-api.net/academic/v1.0/evaluate?subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
+    string url("http://oxfordhk.azure-api.net/academic/v1.0/evaluate?subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6");
     url += "&expr=" + expr + "&attributes=";
 
     string attr;
@@ -255,7 +255,7 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
     Document document;
     
     if(many){
-        string url2 = string("https://oxfordhk.azure-api.net/academic/v1.0/calchistogram?count=0&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&expr=") + expr;
+        string url2 = string("http://oxfordhk.azure-api.net/academic/v1.0/calchistogram?count=0&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6&expr=") + expr;
         const int DIV = 5;
         //cout<<url2<<endl<<json<<endl;
         do{
@@ -264,6 +264,9 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
             //cout<<strlen(json)<<endl<<json<<endl;
         }while(document.HasMember("aborted"));
         
+        clock_t ct0, ct1; 
+        struct tms tms0, tms1;
+        ct0 = times (&tms0);
         int tot = document["num_entities"].GetInt();
         int N_PER_Q = (tot-1) / DIV + 1;
         printf("tot:%d %s\n", tot, expr.c_str());
@@ -279,6 +282,9 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         for(int i = 0; i < DIV; i++)
             t[i].join();
         printf("entities:%d\n", (int)entities.size());
+        ct1 = times(&tms1);
+        double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
+        printf("ti:%f\n",ti1);
         return entities;
     }else{
         clock_t ct0, ct1; 
@@ -287,7 +293,8 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         get_entities_from_url(url+string("&count=10000"), entities);
         ct1 = times(&tms1);
         double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
-        printf("%f\n",ti1);
+        printf("ti:%f\n",ti1);
+        return entities;
     }
     
     delete[] json;

@@ -22,6 +22,5 @@ int main(){
     //print_ans(pp);
     ct1 = times (&tms1);
     cout<<pp.size() << ' ' << (ct1 - ct0) / double(sysconf(_SC_CLK_TCK)) << endl;
-    cout << ti << endl;
     return 0;
 }
