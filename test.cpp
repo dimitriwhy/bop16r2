@@ -18,9 +18,9 @@ int main(){
     struct tms tms0, tms1;
     
     ct0 = times (&tms0);
-    vector<Path> pp = au2pp(2251253715ll,2180737804ll);
+    vector<Path> pp = Id2Id(2126125555ll,2060367530ll);
+    //print_ans(pp);
     ct1 = times (&tms1);
     cout<<pp.size() << ' ' << (ct1 - ct0) / double(sysconf(_SC_CLK_TCK)) << endl;
-    cout << ti << endl;
     return 0;
 }
