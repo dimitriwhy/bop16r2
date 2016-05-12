@@ -2,7 +2,11 @@
 #define REP(i,n) for(int i=0; i<n; i++)
 #define FOR(i,n) for(int i=1; i<=n; i++)
 
+#define PRODUCT
 #include "academic_api.hpp"
+#include "au2au.cpp"
+#include "au2pp.cpp"
+#include "idwithid.cpp"
 typedef long long LL;
 using namespace std;
 
@@ -10,17 +14,13 @@ int main(){
 #ifdef QWERTIER
     freopen("in","r",stdin);
 #endif
-    char *hStr = new char[100000000],*bStr = new char[100000000];
-    LL t1 = clock();
-    vector<Paper> entities = getEntities(string("RId=2128635872"), _RID | _CC | _ID) ;
-    for(auto x : entities){
-        printf("%d %lld\n", x.CC, x.Id);
-        for(auto y : x.AA){
-            //printf("%lld %lld\n", y.AuId, y.AfId);
-        }
-    }
-    LL t2 = clock();
-    printf("%f\n", ti);
-    printf("%f\n",double(t2-t1)/CLOCKS_PER_SEC);
+    clock_t ct0, ct1; 
+    struct tms tms0, tms1;
+    
+    ct0 = times (&tms0);
+    vector<Path> pp = Id2Id(2126125555ll,2060367530ll);
+    //print_ans(pp);
+    ct1 = times (&tms1);
+    cout<<pp.size() << ' ' << (ct1 - ct0) / double(sysconf(_SC_CLK_TCK)) << endl;
     return 0;
 }

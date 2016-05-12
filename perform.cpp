@@ -68,9 +68,9 @@ vector<Path> get_ans(LL id1, LL id2){
     if(pp1 && pp2)
         return Id2Id(id1, id2);
     else if(pp1)
-        return pp2au(id1, id2);
+        return PP2AU::pp2au(id1, id2);
     else if(pp2)
-        return au2pp(id1, id2);
+        return AU2PP::au2pp(id1, id2);
     else
         return au2au(id1, id2);
 }
@@ -111,7 +111,9 @@ int main(void) {
         printf("%lld %lld\n", query.first, query.second);
         try{        
             print_ans(get_ans(query.first, query.second));
-            throw "aaa";
+            ct1 = times (&tms1);
+            double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
+            printf("%f\n",ti1);
         }catch(...){
             time_t nowtime = time(NULL);
             struct tm *ptm;  
@@ -122,7 +124,6 @@ int main(void) {
         }
         
         if(test_flag){
-            ct1 = times (&tms1);
             double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
             cout<<",[\"ti\":" << ti1 <<"]" << endl;
         }

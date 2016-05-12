@@ -6,10 +6,15 @@ int pp_cmp(const Paper & a,const Paper & b){
 }
 vector <vector <long long> > Id2Id(long long id1,long long  id2){
 	vector <vector <long long> > ans;
-	vector <Paper> p1 = getEntities(string("Id=") + to_string(id1),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
-	vector <Paper> p2 = getEntities(string("Id=") + to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	vector <Paper> p1 = getEntities(string("OR(Id=") + to_string(id1) + string(",Id=") + to_string(id2) + string(")"),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
+	vector <Paper> p2;
+    if(p1[0].Id == id1)
+        p2.push_back(p1[1]);
+    else{
+        p2.push_back(p1[0]);
+        swap(p1[0],p1[1]);
+    }
 	//1-HOP
-	if (p1.size() != 1 || p2.size() != 1) return ans;
 	for (int i = 0;i < p1[0].RId.size();i++)
 		if (p1[0].RId[i] == id2){
 			vector <long long> tt;
@@ -67,7 +72,7 @@ vector <vector <long long> > Id2Id(long long id1,long long  id2){
 
 	//3-HOP
 	//p-p-p-p
-	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID);
+	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>10000);
 	sort(pp2.begin(),pp2.end(),pp_cmp);
 	for (int i = 0;i < pp1.size();i++)
 		for (int j = 0;j < pp1[i].RId.size();j++){
