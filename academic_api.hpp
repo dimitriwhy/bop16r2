@@ -6,7 +6,9 @@
 #include <curl/curl.h>
 #include <sys/times.h> 
 #include <unistd.h> 
-#include <time.h> 
+#include <time.h>
+#include <iostream>
+#include <bits/stdc++.h>
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -14,7 +16,6 @@
 
 using namespace std;
 using namespace rapidjson;
-
 
 double ti = 0;
 
@@ -99,7 +100,20 @@ namespace Academic
         }
         cout<<"]";
     }
+    Path get_path(int cnt, ...){
+        va_list args;
+        Path ret;
+        va_start(args, cnt);
+        while(cnt--){
+            LL tmp;
+            ret.push_back(tmp=va_arg(args, LL));
+        }
+        va_end(args);
+        return ret;
+    }
+    
 }
+
 using namespace Academic;
 
 
@@ -269,7 +283,9 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         ct0 = times (&tms0);
         int tot = document["num_entities"].GetInt();
         int N_PER_Q = (tot-1) / DIV + 1;
+#ifdef PRODUCT
         printf("tot:%d %s\n", tot, expr.c_str());
+#endif
         if(tot <= 0)
             return entities;
         int t_num = (tot - 1) / N_PER_Q + 1;
@@ -281,10 +297,12 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         }
         for(int i = 0; i < DIV; i++)
             t[i].join();
+#ifdef PRODUCT
         printf("entities:%d\n", (int)entities.size());
         ct1 = times(&tms1);
         double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
         printf("ti:%f\n",ti1);
+#endif
         return entities;
     }else{
         clock_t ct0, ct1; 
@@ -292,8 +310,10 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         ct0 = times (&tms0);
         get_entities_from_url(url+string("&count=10000"), entities);
         ct1 = times(&tms1);
+#ifdef PRODUCT
         double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
         printf("ti:%f\n",ti1);
+#endif
         return entities;
     }
     
