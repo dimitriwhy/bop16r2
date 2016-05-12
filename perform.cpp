@@ -3,9 +3,10 @@
 #include <iostream>
 #include "fcgio.h"
 #include "academic_api.hpp"
-#include "idwithid.cpp"
+#include "pp2pp.cpp"
 #include "au2au.cpp"
 #include "au2pp.cpp"
+#include "pp2au.cpp"
 
 using namespace std;
 
