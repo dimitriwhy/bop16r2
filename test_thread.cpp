@@ -95,7 +95,8 @@ int main(){
     struct tms tms0, tms1;
     
     ct0 = times (&tms0);
-    vector<Paper> pp = getEntities(string("RId=2106787323"), _ID, true);
+    //vector<Paper> pp = getEntities(string("RId=2106787323"), _ID, true);
+    vector<Paper> pp = getEntities(string("Composite(OR(AA.AuId=2180737804,AA.AuId=2251253715))&orderby=Id:asc"), _ID | _RID | _AA_AFID | _AA_AUID);
     ct1 = times (&tms1);
     cout<<pp.size()<<endl;
     cout<<pp.size() << ' ' << (ct1 - ct0) / double(sysconf(_SC_CLK_TCK)) << endl;

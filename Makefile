@@ -11,7 +11,7 @@ CMP_CMD = g++ --std=gnu++11 -O3
 .PHONY: test au2pp perform idwithid test_thread
 
 test:
-	$(CMP_CMD) test.cpp -o test$(OPT) -lcurl
+	$(CMP_CMD) test.cpp -o test$(OPT) -lcurl -pthread
 
 au2pp:
 	$(CMP_CMD) au2pp.cpp -o au2pp$(OPT) -lcurl
