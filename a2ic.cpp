@@ -39,7 +39,7 @@ void a2ihop3(vector <Path> & ans,vector <Paper> & ap,Paper & p,LL aid,LL id){
 				}
 		for (int j = 0;j < ap[i].AA.size();j++)
 			for (int k = 0;k < p.AA.size();k++)
-				if (ap[i].AA[j].AuId == p.AA[j].AuId){
+				if (ap[i].AA[j].AuId == p.AA[k].AuId){
 					Path tt;
 					tt.push_back(aid);tt.push_back(ap[i].Id);tt.push_back(p.AA[k].AuId);tt.push_back(id);
 					ans.push_back(tt);
@@ -79,8 +79,17 @@ vector <Path> a2icheck(LL aid,LL id){
 	a2ihop1(ans,ap,pp[0],aid,id);
 	a2ihop2(ans,ap,pp[0],aid,id);
 	a2ihop3(ans,ap,pp[0],aid,id);
+	return ans;
 }
 int main(){
-	
+	freopen("ff.out","w",stdout);
+	vector <Path> ff = a2icheck(2251253715LL,2180737804LL);
+	for (int i = 0;i < ff.size();i++){
+		printf("[");
+		for (int j = 0;j < ff[i].size();j++)
+			printf("%lld,",ff[i][j]);
+		printf("],");
+	}
+
 	return 0;
 }
