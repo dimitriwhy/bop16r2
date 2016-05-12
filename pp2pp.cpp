@@ -6,6 +6,7 @@ int pp_cmp(const Paper & a,const Paper & b){
 }
 vector <vector <long long> > pp2pp(long long id1,long long  id2){
 	vector <vector <long long> > ans;
+
 	vector <Paper> p1 = getEntities(string("OR(Id=") + to_string(id1) + string(",Id=") + to_string(id2) + string(")"),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
 	vector <Paper> p2;
     if(p1[0].Id == id1)
@@ -14,16 +15,9 @@ vector <vector <long long> > pp2pp(long long id1,long long  id2){
         p2.push_back(p1[0]);
         swap(p1[0],p1[1]);
     }
-	//1-HOP
-	for (int i = 0;i < p1[0].RId.size();i++)
-		if (p1[0].RId[i] == id2){
-			vector <long long> tt;
-			tt.push_back(id1);tt.push_back(id2);
-			ans.push_back(tt);
-		}
 
-	//2-HOP
-	//p-p-p 
+	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>10000);
+
     vector <Paper> pp1;
 	string query = string("");
 	for (int i = 0;i < p1[0].RId.size();i++){
@@ -33,6 +27,20 @@ vector <vector <long long> > pp2pp(long long id1,long long  id2){
 		else 
 			for (int j = 0;j < p1[0].RId.size() - 1;j ++) query += string(")");
 	}
+
+
+
+
+	//1-HOP
+	for (int i = 0;i < p1[0].RId.size();i++)
+		if (p1[0].RId[i] == id2){
+			vector <long long> tt;
+			tt.push_back(id1);tt.push_back(id2);
+			ans.push_back(tt);
+		}
+
+	//2-HOP
+	//p-p-p pp1 join
 	if (p1[0].RId.size())
         pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 	for (int i = 0;i < pp1.size();i++)
@@ -71,8 +79,7 @@ vector <vector <long long> > pp2pp(long long id1,long long  id2){
 			}
 
 	//3-HOP
-	//p-p-p-p
-	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>10000);
+	//p-p-p-p pp2.join
 	sort(pp2.begin(),pp2.end(),pp_cmp);
 	for (int i = 0;i < pp1.size();i++)
 		for (int j = 0;j < pp1[i].RId.size();j++){
