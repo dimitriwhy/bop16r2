@@ -4,22 +4,11 @@ using namespace std;
 int pp_cmp(const Paper & a,const Paper & b){
 	return a.Id < b.Id;
 }
-vector <vector <long long> > pp2pp(long long id1,long long  id2){
-	vector <vector <long long> > ans;
 
-	vector <Paper> p1 = getEntities(string("OR(Id=") + to_string(id1) + string(",Id=") + to_string(id2) + string(")"),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
-	vector <Paper> p2;
-    if(p1[0].Id == id1)
-        p2.push_back(p1[1]);
-    else{
-        p2.push_back(p1[0]);
-        swap(p1[0],p1[1]);
-    }
+void f1(LL id1, LL id2, vector<Paper> &p1, vector<Paper> &pp1){
+    p1 = getEntities(string("Id=") + to_string(id1),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
 
-	vector <Paper> pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>10000);
-
-    vector <Paper> pp1;
-	string query = string("");
+    string query = string("");
 	for (int i = 0;i < p1[0].RId.size();i++){
 		if (i < p1[0].RId.size() - 1) query += string("OR(");
 		query += string("Id=") + to_string(p1[0].RId[i]);
@@ -27,9 +16,22 @@ vector <vector <long long> > pp2pp(long long id1,long long  id2){
 		else 
 			for (int j = 0;j < p1[0].RId.size() - 1;j ++) query += string(")");
 	}
+	if (p1[0].RId.size())
+        pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+}
+void f2(LL id1, LL id2, vector<Paper> &p2, vector<Paper> &pp2){
+    p2 = getEntities(string("Id=") + to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
+    pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>=5000);
+}
+vector <vector <long long> > pp2pp(long long id1,long long  id2){
+	vector <vector <long long> > ans;
 
-
-
+	vector <Paper> p1,p2;
+	vector <Paper> pp2,pp1;
+    thread t1(f1, id1, id2, ref(p1),ref(pp1));
+    thread t2(f2, id1, id2, ref(p2),ref(pp2));
+    t1.join();
+    t2.join();
 
 	//1-HOP
 	for (int i = 0;i < p1[0].RId.size();i++)
@@ -41,8 +43,6 @@ vector <vector <long long> > pp2pp(long long id1,long long  id2){
 
 	//2-HOP
 	//p-p-p pp1 join
-	if (p1[0].RId.size())
-        pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 	for (int i = 0;i < pp1.size();i++)
 		for (int j = 0;j < pp1[i].RId.size();j++)
 			if (pp1[i].RId[j] == id2){
@@ -159,7 +159,7 @@ int main(){
     freopen("ans.json", "w", stdout);
     LL id1, id2;
     scanf("%lld%lld", &id1, &id2);
-    print_ans(pp2pp(id1,id2));
+    print_ans(pp2pp(2026027122ll, 2056192258ll));
 	return 0;
 }
 #endif
