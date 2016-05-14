@@ -285,7 +285,6 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
 
         if(tot < 1000){
             get_entities_from_url(url+string("&count=10000"), entities);
-            return entities;
         }else{
             int N_PER_Q = (tot-1) / DIV + 1;
 #ifdef PRODUCT
