@@ -10,7 +10,7 @@ struct paper_id_less {
 		return lhs.Id < rhs.Id;
 	}
 };
-inline bool id_asc(Paper &i, Paper &j){
+inline const bool id_asc(const Paper &i, const Paper &j){
     return i.Id < j.Id;
 }
 vector<vector<long long>> au2au(long long AuId1, long long AuId2, vector<Paper> entities) {
