@@ -282,23 +282,27 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
         struct tms tms0, tms1;
         ct0 = times (&tms0);
         int tot = document["num_entities"].GetInt();
-        int N_PER_Q = (tot-1) / DIV + 1;
-#ifdef PRODUCT
-        printf("tot:%d %s\n", tot, expr.c_str());
-#endif
-        if(tot <= 0)
+
+        if(tot < 1000){
+            get_entities_from_url(url+string("&count=10000"), entities);
             return entities;
-        int t_num = (tot - 1) / N_PER_Q + 1;
-        thread t[t_num];
-        url += string("&count=") + to_string(N_PER_Q);
-        for(int i = 0; i < DIV; i++){
-            string str = url + string("&offset=") + to_string(i*N_PER_Q);
-            t[i] = thread(get_entities_from_url, str, ref(entities));
-        }
-        for(int i = 0; i < DIV; i++)
-            t[i].join();
+        }else{
+            int N_PER_Q = (tot-1) / DIV + 1;
 #ifdef PRODUCT
-        printf("entities:%d\n", (int)entities.size());
+            printf("tot:%d %s\n", tot, expr.c_str());
+#endif
+            int t_num = (tot - 1) / N_PER_Q + 1;
+            thread t[t_num];
+            url += string("&count=") + to_string(N_PER_Q);
+            for(int i = 0; i < DIV; i++){
+                string str = url + string("&offset=") + to_string(i*N_PER_Q);
+                t[i] = thread(get_entities_from_url, str, ref(entities));
+            }
+            for(int i = 0; i < DIV; i++)
+                t[i].join();
+#ifdef PRODUCT
+            printf("entities:%d\n", (int)entities.size());
+        }
         ct1 = times(&tms1);
         double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
         printf("ti:%f\n",ti1);

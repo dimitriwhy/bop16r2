@@ -1,9 +1,11 @@
 OS_NAME = $(shell uname -o)
 LC_OS_NAME = $(shell echo $(OS_NAME) | tr '[A-Z]' '[a-z]')
+OPT = .out
 ifeq ($(LC_OS_NAME), msys)
 OPT = .exe
-else 
-OPT = .out
+endif
+ifeq ($(LC_OS_NAME), cygwin)
+OPT = .exe
 endif
 
 CMP_CMD = g++ --std=gnu++11 -O3 -w
