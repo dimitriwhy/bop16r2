@@ -4,18 +4,41 @@ using namespace std;
 int pp_cmp(const Paper & a,const Paper & b){
 	return a.Id < b.Id;
 }
-
+void ff1(LL id1,LL id2,vector <Paper> p1,vector <Paper> &fuck,int kk){
+	string query = string("");
+	int maxn = max((kk + 1) * 100,(int)p1[0].RId.size());
+	for (int i = kk * 100;i < maxn;kk++){
+		if (i < maxn - 1) query += string("OR(");
+		query += string("Id=") + to_string(p1[0].RId[i]);
+		if (i != maxn - 1) query += string(",");
+		else for (int j = 0;j < maxn - 1;j++) query += string(")");
+	}
+	fuck = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+}
 void f1(LL id1, LL id2, vector<Paper> p1, vector<Paper> &pp1){
     string query = string("");
-	for (int i = 0;i < p1[0].RId.size();i++){
-		if (i < p1[0].RId.size() - 1) query += string("OR(");
-		query += string("Id=") + to_string(p1[0].RId[i]);
-		if (i != p1[0].RId.size() - 1) query += string(",");
-		else 
-			for (int j = 0;j < p1[0].RId.size() - 1;j ++) query += string(")");
+	if (p1[0].RId.size() <= 100){
+		for (int i = 0;i < p1[0].RId.size();i++){
+			if (i < p1[0].RId.size() - 1) query += string("OR(");
+			query += string("Id=") + to_string(p1[0].RId[i]);
+			if (i != p1[0].RId.size() - 1) query += string(",");
+			else 
+				for (int j = 0;j < p1[0].RId.size() - 1;j ++) query += string(")");
+		}
+		if (p1[0].RId.size())
+			pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
+	}else {
+		int tot = p1[0].RId.size()/100 + (p1[0].RId.size() %100 != 0);
+		thread tt[tot];
+		vector <vector <Paper> > fuck;
+		fuck.resize(tot);
+		for (int kk = 0;kk < tot;kk++)
+			tt[kk] = thread(ff1,id1,id2,p1,ref(fuck[kk]),kk);
+		for (int kk = 0;kk < tot;kk++){
+			tt[kk].join();
+			pp1.insert(pp1.begin(),fuck[kk].begin(),fuck[kk].end());
+		}
 	}
-	if (p1[0].RId.size())
-        pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 }
 void f2(LL id1, LL id2, vector<Paper> p2, vector<Paper> &pp2){
     pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>=5000);
@@ -158,7 +181,7 @@ int main(){
     freopen("ans.json", "w", stdout);
     LL id1, id2;
     scanf("%lld%lld", &id1, &id2);
-    print_ans(pp2pp(2026027122ll, 2056192258ll));
+	//    print_ans(pp2pp(2026027122ll, 2056192258ll));
 	return 0;
 }
 #endif
