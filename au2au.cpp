@@ -10,14 +10,20 @@ struct paper_id_less {
 		return lhs.Id < rhs.Id;
 	}
 };
-vector<vector<long long>> au2au(long long AuId1, long long AuId2) {
+inline bool id_asc(Paper &i, Paper &j){
+    return i.Id < j.Id;
+}
+vector<vector<long long>> au2au(long long AuId1, long long AuId2, vector<Paper> entities) {
 	typedef long long id_type;
 	vector<vector<id_type>> ret;
+    /*
 	stringstream expr;
 	expr << "Composite(Or(AA.AuId=" << AuId1 << ",AA.AuId=" << AuId2 << "))";
 	//just cheat the interface
 	expr << "&orderby=Id:asc";
 	vector<Paper> entities(getEntities(expr.str(), _ID | _AA_AUID | _AA_AFID | _RID));
+    */
+    sort(entities.begin(), entities.end(), id_asc);
 	vector<id_type> currentpath(3);
 	currentpath[0] = AuId1;
 	currentpath[2] = AuId2;

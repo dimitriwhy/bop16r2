@@ -59,21 +59,31 @@ vector<Path> get_ans(LL id1, LL id2){
         return ret;
     }
     bool pp1 = false, pp2 = false;
-    vector<Paper> chk = getEntities(string("OR(Id=") + to_string(id1) + string(",Id=") + to_string(id2) + string(")"), _ID | _AA_AUID);
+    Paper p1, p2;
+    string q1 = string("OR(Composite(AA.AuId=") + to_string(id1) + string("),AND(Y>0,Id=") + to_string(id1) + string("))");
+    string q2 = string("OR(Composite(AA.AuId=") + to_string(id2) + string("),AND(Y>0,Id=") + to_string(id2) + string("))");
+    vector<Paper> chk = getEntities(string("OR(") + q1 + string(",") + q2 + string(")"), _ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC | _AA_AFID | _RID);
+    vector<Paper> paper_by_au;
     for(auto &p : chk){
-        if(p.Id == id1 && p.AA.size())
+        if(p.Id == id1 && p.AA.size()){
+            p1 = p;
             pp1 = true;
-        if(p.Id == id2 && p.AA.size())
+        }
+        if(p.Id == id2 && p.AA.size()){
+            p2 = p;
             pp2 = true;
+        }
+        if(p.Id != id1 && p.Id != id2)
+            paper_by_au.push_back(p);
     }
     if(pp1 && pp2)
-        return pp2pp(id1, id2);
+        return pp2pp(id1, id2, p1, p2);
     else if(pp1)
-        return PP2AU::pp2au(id1, id2);
+        return PP2AU::pp2au(id1, id2, p1, paper_by_au);
     else if(pp2)
-        return AU2PP::au2pp(id1, id2);
+        return AU2PP::au2pp(id1, id2, paper_by_au, p2);
     else
-        return au2au(id1, id2);
+        return au2au(id1, id2, chk);
 }
 
 int main(void) {

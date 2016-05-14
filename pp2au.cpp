@@ -143,33 +143,16 @@ namespace PP2AU{
         t21.join();
         t22.join();
     }
-    vector<Path> pp2au(LL id, LL au_id){
-        vector<Paper> paper_by_au; // Papers by Au
-        Paper paper; // Id paper
+    vector<Path> pp2au(LL id, LL au_id,Paper paper, vector<Paper> paper_by_au){
         vector<LL> paper_ref_ing;
         vector<Paper> paper_ref_ing2;
         vector<Paper> paper_au_af;
-        thread t1(f1, id, au_id, ref(paper_by_au));
-        thread t2(f2, id, au_id, ref(paper), ref(paper_ref_ing), ref(paper_ref_ing2), ref(paper_au_af));
-        t1.join();
-        t2.join();
-        /*
-        if(paper_ref_ing.size() > 0){
-            string expr = string("Id=") + to_string(paper_ref_ing[0]);
-            for(int i = 1; i < paper_ref_ing.size(); i++)
-                expr = string("OR(Id=") + to_string(paper_ref_ing[i]) + string(",") + expr + string(")");
-            paper_ref_ing2 = getEntities(expr, _RID | _ID);
-        }
+        paper_ref_ing = paper.RId;
+        thread t21(f21, paper_ref_ing, ref(paper_ref_ing2));
+        thread t22(f22, paper.AA, ref(paper_au_af));
+        t21.join();
+        t22.join();
 
-        if(paper.AA.size()){
-            string expr = string("AA.AuId=") + to_string(paper.AA[0].AuId);
-            for(int i = 1; i < paper.AA.size(); ++i){
-                expr = "OR(AA.AuId=" + to_string(paper.AA[i].AuId) + string(",") + expr + string(")");
-            }
-            expr = string("Composite(") + expr + string(")");
-            paper_au_af = getEntities(expr, _AA_AUID | _AA_AFID);
-        }
-        */
         vector<Path> ret;
         pp2au_1hop(id, au_id, ret, paper);
         pp2au_2hop(id, au_id, ret, paper_by_au, paper);

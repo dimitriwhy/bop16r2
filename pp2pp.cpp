@@ -5,9 +5,7 @@ int pp_cmp(const Paper & a,const Paper & b){
 	return a.Id < b.Id;
 }
 
-void f1(LL id1, LL id2, vector<Paper> &p1, vector<Paper> &pp1){
-    p1 = getEntities(string("Id=") + to_string(id1),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
-
+void f1(LL id1, LL id2, vector<Paper> p1, vector<Paper> &pp1){
     string query = string("");
 	for (int i = 0;i < p1[0].RId.size();i++){
 		if (i < p1[0].RId.size() - 1) query += string("OR(");
@@ -19,17 +17,18 @@ void f1(LL id1, LL id2, vector<Paper> &p1, vector<Paper> &pp1){
 	if (p1[0].RId.size())
         pp1 = getEntities(query,_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID);
 }
-void f2(LL id1, LL id2, vector<Paper> &p2, vector<Paper> &pp2){
-    p2 = getEntities(string("Id=") + to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID|_RID |_CC);
+void f2(LL id1, LL id2, vector<Paper> p2, vector<Paper> &pp2){
     pp2 = getEntities(string("RId=")+to_string(id2),_ID|_F_FID|_J_JID|_C_CID|_AA_AUID, p2[0].CC>=5000);
 }
-vector <vector <long long> > pp2pp(long long id1,long long  id2){
+vector <vector <long long> > pp2pp(long long id1,long long  id2, Paper p10, Paper p20){
 	vector <vector <long long> > ans;
 
 	vector <Paper> p1,p2;
+    p1.push_back(p10);
+    p2.push_back(p20);
 	vector <Paper> pp2,pp1;
-    thread t1(f1, id1, id2, ref(p1),ref(pp1));
-    thread t2(f2, id1, id2, ref(p2),ref(pp2));
+    thread t1(f1, id1, id2, p1,ref(pp1));
+    thread t2(f2, id1, id2, p2,ref(pp2));
     t1.join();
     t2.join();
 
