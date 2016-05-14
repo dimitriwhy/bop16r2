@@ -301,7 +301,9 @@ vector<Paper> getEntities(string expr, int items, bool many = false){
                 t[i].join();
 #ifdef PRODUCT
             printf("entities:%d\n", (int)entities.size());
+#endif
         }
+#ifdef PRODUCT
         ct1 = times(&tms1);
         double ti1 = (ct1 - ct0) / (double)sysconf (_SC_CLK_TCK);
         printf("ti:%f\n",ti1);
