@@ -117,12 +117,31 @@ namespace PP2AU{
     void f1(LL id, LL au_id, vector<Paper> &paper_by_au){
         paper_by_au = getEntities(string("Composite(AA.AuId=") + to_string(au_id) + string(")"), _ID | _F_FID | _J_JID | _C_CID | _AA_AUID | _AA_AFID); // Papers by Au
     }
+    void f211(vector<LL> paper_ref_ing, vector<Paper> &paper_ref_ing2, int st, int ed){
+        if(st>=ed)
+            return;
+        string expr = string("Id=") + to_string(paper_ref_ing[0]);
+        for(int i = st + 1; i < min((int)paper_ref_ing.size(),ed); i++){
+            expr = string("OR(Id=") + to_string(paper_ref_ing[i]) + string(",") + expr + string(")");
+        }
+        paper_ref_ing2 = getEntities(expr, _RID | _ID);
+    }
     void f21(vector<LL> paper_ref_ing, vector<Paper> &paper_ref_ing2){
         if(paper_ref_ing.size() > 0){
-            string expr = string("Id=") + to_string(paper_ref_ing[0]);
-            for(int i = 1; i < paper_ref_ing.size(); i++)
-                expr = string("OR(Id=") + to_string(paper_ref_ing[i]) + string(",") + expr + string(")");
-            paper_ref_ing2 = getEntities(expr, _RID | _ID);
+            if(paper_ref_ing.size() <= 100){
+                f211(paper_ref_ing, paper_ref_ing2, 0, paper_ref_ing.size());
+            }else{
+                vector<vector<Paper> > fuck;
+                fuck.resize((paper_ref_ing.size() + 99) / 100);
+                vector<thread> t(fuck.size());
+                for(int i = 0; i < fuck.size(); ++i)
+                    t[i] = thread(f211, paper_ref_ing, ref(fuck[i]), i*100, (i+1)*100);
+                for(int i = 0; i < fuck.size(); ++i){
+                    t[i].join();
+                    paper_ref_ing2.insert(paper_ref_ing2.end(), fuck[i].begin(), fuck[i].end());
+                }
+                //printf("%d\n",paper_ref_ing2.size());
+            }
         }
     }
     void f22(vector<Author> AA, vector<Paper> &paper_au_af){
